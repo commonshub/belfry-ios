@@ -109,9 +109,12 @@ public final class Relay: NSObject, @unchecked Sendable, URLSessionWebSocketDele
     public func close() {
         lock.lock()
         let t = task
+        let s = session
         task = nil
+        session = nil
         lock.unlock()
         t?.cancel(with: .goingAway, reason: nil)
+        s?.invalidateAndCancel()
         set(.down)
     }
 

@@ -408,14 +408,8 @@ public final class SyncEngine: @unchecked Sendable {
         DispatchQueue.main.async {
             self.watchdog = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in self?.tick() }
         }
-        if localOnly { firstChannelLocal() } else { wake() }
+        if !localOnly { wake() } // local-only (demo) data is seeded by the app
         flushSoon()
-    }
-
-    private func firstChannelLocal() {
-        if latest([39000]) == 0 {
-            for d in Actions.createChannel(id: generalId, name: "general", about: "Everything about \(config.name). Say hi 👋") { enqueue(d) }
-        }
     }
 
     /// Network back, app in the foreground, pull to refresh: reconnect, catch up, send.

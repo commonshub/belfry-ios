@@ -136,7 +136,8 @@ struct ChannelRow: View {
     }
 
     func preview(_ t: String) -> String {
-        Mentions.npubInText.replace(t, with: "@…").replacingOccurrences(of: "\n", with: " ")
+        let plain = Rx("\\*\\*|__|~~|`").replace(t, with: "")
+        return Mentions.npubInText.replace(plain, with: "@…").replacingOccurrences(of: "\n", with: " ")
     }
 }
 
@@ -144,6 +145,10 @@ struct ConnectionBadge: View {
     @EnvironmentObject var model: AppModel
     var body: some View {
         let _ = model.version
+        status.labelStyle(.titleAndIcon)
+    }
+
+    @ViewBuilder var status: some View {
         if model.isDemo {
             Label("Demo: nothing leaves this phone", systemImage: "iphone").font(.caption).foregroundStyle(.secondary)
         } else if !model.online {
@@ -164,7 +169,7 @@ struct SearchResults: View {
     var body: some View {
         let words = fold(query).split(separator: " ").map(String.init)
         let hits = results(words)
-        Section(hits.isEmpty ? "Nothing found" : "\(hits.count == 200 ? "200+" : String(hits.count)) results") {
+        Section(hits.isEmpty ? "Nothing found" : "\(hits.count == 200 ? "200+" : String(hits.count)) \(hits.count == 1 ? "result" : "results")") {
             ForEach(hits) { hit in
                 let gid = hit.channel, m = hit.message
                 Button { open(SearchTarget(channel: gid, message: m.id)) } label: {

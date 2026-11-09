@@ -14,6 +14,7 @@ struct ChannelView: View {
     @State private var details = false
     @State private var invite = false
     @State private var didLaunch = false
+    @State private var pendingThreadLaunch = false
 
     var body: some View {
         let _ = model.version
@@ -61,9 +62,11 @@ struct ChannelView: View {
                 model.markSeen(id)
                 if let focus { DispatchQueue.main.async { withAnimation { proxy.scrollTo(focus, anchor: .center) } } }
                 applyLaunch()
+                if pendingThreadLaunch { openBusiestThread(proxy) }
             }
             .onChange(of: feed.count) { _, _ in
                 if focus == nil { withAnimation { proxy.scrollTo("bottom", anchor: .bottom) } }
+                if pendingThreadLaunch { openBusiestThread(proxy) }
             }
             .safeAreaInset(edge: .bottom) {
                 Composer(placeholder: "Message \(g?.name ?? id)", canAnnounce: model.derive.canAdmin(g)) { text, attachments, announce in
@@ -92,6 +95,14 @@ struct ChannelView: View {
         .sheet(isPresented: $invite) { InviteSheet(id: id) }
     }
 
+    /// Screenshots: unfold the thread with the most replies once the demo data is there.
+    func openBusiestThread(_ proxy: ScrollViewProxy) {
+        guard let root = model.derive.threadsInOrder(id).max(by: { $0.info.count < $1.info.count })?.root else { return }
+        pendingThreadLaunch = false
+        openThreads.insert(root)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { proxy.scrollTo(root, anchor: .top) }
+    }
+
     func toggle(_ key: String) {
         withAnimation(.snappy) {
             if openThreads.contains(key) { openThreads.remove(key) } else { openThreads.insert(key) }
@@ -118,8 +129,7 @@ struct ChannelView: View {
         guard !didLaunch else { return }
         didLaunch = true
         switch model.launch.screen {
-        case "thread":
-            if let root = model.derive.threadsInOrder(id).first?.root { openThreads.insert(root) }
+        case "thread": pendingThreadLaunch = true
         case "details": details = true
         case "invite": invite = true
         default: break
