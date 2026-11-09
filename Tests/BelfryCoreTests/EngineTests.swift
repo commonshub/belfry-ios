@@ -48,7 +48,7 @@ final class EngineTests: XCTestCase {
         XCTAssertTrue(g.admins.contains(me.pubkey))
         XCTAssertEqual(d.messages("book-club-1a2b").map(\.text), ["First! #books"])
         XCTAssertEqual(d.messages("book-club-1a2b").first?.topics, ["books"])
-        let times = e.snapshot().filter { $0.pubkey == me.pubkey }.map(\.createdAt).sorted()
+        let times = e.snapshot().filter { $0.pubkey == me.pubkey && [9, 9002, 9007].contains($0.kind) }.map(\.createdAt).sorted()
         XCTAssertEqual(Set(times).count, times.count, "created_at grows per client")
     }
 

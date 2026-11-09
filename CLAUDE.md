@@ -67,3 +67,11 @@ invite|messages|conversation|mail|search|channels` opens a screen (used by the s
   submissions, other repos, anything on the Belfry servers. Never modify `village-app` or
   `collective-belfry` from here.
 - Never print secrets. Commit messages end with the Co-Authored-By / Claude-Session lines.
+
+## Known debt
+
+- NSLock is used from async functions in `Net/` and `DM/` (warnings "unavailable from asynchronous
+  contexts" in Swift 5 mode, errors in Swift 6). Move SyncEngine / DirectMessages / Relay state
+  into actors before switching the package to Swift 6 language mode.
+- Derived views recompute over the whole log per version (fine for a community; add indexes per
+  group if logs grow past tens of thousands of events).
