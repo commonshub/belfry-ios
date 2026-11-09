@@ -92,7 +92,7 @@ struct ThreadRow: View {
     var title: String { convName(model, thread.conv) }
 }
 
-func convName(_ model: AppModel, _ conv: String) -> String {
+@MainActor func convName(_ model: AppModel, _ conv: String) -> String {
     if MailThreads.isMail(conv) {
         let a = MailThreads.address(conv)
         let named = model.dms?.threads().flatMap { model.dms?.thread($0.conv) ?? [] }.first { !$0.mine && $0.fromName != nil && MailThreads.isMail($0.conv) && MailThreads.address($0.conv) == a }?.fromName
