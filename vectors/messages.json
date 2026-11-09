@@ -1,0 +1,256 @@
+{
+  "about": "A channel feed: kind 9 with the h tag, oldest first (ties by id), minus deletions (kind 5 by the same author, 9005 by a moderator); imeta media (http/https only) cut out of the text; t tags lowercased.",
+  "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
+  "people": {
+    "alice": {
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    "bob": {
+      "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+      "secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "npub": "npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e"
+    },
+    "carol": {
+      "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+      "secret": "476900b1b1d624890192378df6d230650f10f196ebe53e56090b80623c4a979e",
+      "npub": "npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y"
+    },
+    "dave": {
+      "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+      "secret": "e19f850a85f1f08266b75695819802703ed6c27192f0c58d9ef13b86c156a157",
+      "npub": "npub16p8emttu7fmqssp5dkfftlfk47nwfaqzff3x5fe2pe4h4ypc7g6qs8qtyz"
+    },
+    "erin": {
+      "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+      "secret": "45da4ddbb3358f8a5468d8c9abcedaf6617e7707cd1ad48c54d78d43d34530ab",
+      "npub": "npub1rpxa9u35smhsgecekx20nd6lrcllqtvdxgq7le0dxsdr2kt0cqhq67fgjc"
+    },
+    "zoe": {
+      "pubkey": "29c456025fce8b93474c37cf431942a940c08ede1ad41c6112fc3d6ebdf1bfbc",
+      "secret": "9b03d960dfba22af93e03feccf7b7de1db287952e17e8d6bf83b7d42c3a2c336",
+      "npub": "npub198z9vqjle69ex36vxl85xx2z49qvprk7rt2pccgjls7ka003h77qmnuka3"
+    },
+    "relay": {
+      "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+      "secret": "4f905f77219cd34450e308030694a9824a789b5ec1efcd0abc4a770458283471",
+      "npub": "npub1jkwzggpt9drxqt8cv9xymyc02u23s4glhufpjv9nwx3v5vsmahwsepnd0w"
+    },
+    "groups": {
+      "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+      "secret": "4597d01767f5ebe26e3605f653d5f9d300dab74014983f12a3265016849283c5",
+      "npub": "npub1ljeyka6mttcngcrfm2pa2m9zc2xmvt444fs6sgmn6zvqzfqq3epq7rhaer"
+    },
+    "bridge": {
+      "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "secret": "f42b316fb4b50e20336569f7afe527faa18b5aa6b8e9122b79ba9bb8823bb014",
+      "npub": "npub167e7unx349s9ekpycus73ktw2r9z5gmmsrjgdmrdx46t3x3awf4s0ctktg"
+    }
+  },
+  "cases": [
+    {
+      "name": "deletion and media",
+      "me": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "group": "general",
+      "events": [
+        {
+          "id": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 9,
+          "created_at": 1793000000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "one",
+          "sig": "",
+          "_label": "m1"
+        },
+        {
+          "id": "cac0b730925de4bd9e733d9d9afb48fbd18ade85d6ec2b501fdcd77905313f8f",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 9,
+          "created_at": 1793000001,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "two",
+          "sig": "",
+          "_label": "m2"
+        },
+        {
+          "id": "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 9,
+          "created_at": 1793000002,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "three",
+          "sig": "",
+          "_label": "m3"
+        },
+        {
+          "id": "725edb8cf4ade8e6f5d76fff06c64ccf07628fe8875eed381820919fdef9995c",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 9,
+          "created_at": 1793000003,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "imeta",
+              "url https://blossom.example.org/0f3c.jpg",
+              "m image/jpeg",
+              "size 1234",
+              "dim 640x480",
+              "alt beach.jpg"
+            ],
+            [
+              "t",
+              "Beach"
+            ]
+          ],
+          "content": "look #beach\nhttps://blossom.example.org/0f3c.jpg",
+          "sig": "",
+          "_label": "m4"
+        },
+        {
+          "id": "9655ba4ecd023e52cdc04438dfc7a2bd4eb1226a31090b1db5228020c09d2f72",
+          "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+          "kind": 9,
+          "created_at": 1793000004,
+          "tags": [
+            [
+              "h",
+              "garden"
+            ]
+          ],
+          "content": "elsewhere",
+          "sig": "",
+          "_label": "m5"
+        },
+        {
+          "id": "fd9f6dc750f273bd898e7bc012c7fce195c224744e26564210979d89f2c7c6f5",
+          "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+          "kind": 9,
+          "created_at": 1793000003,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "imeta",
+              "url javascript:alert(1)",
+              "m image/png"
+            ]
+          ],
+          "content": "bad media",
+          "sig": "",
+          "_label": "m6"
+        },
+        {
+          "id": "221aa639cfc371decab5cc3f4ea4761be528e8761f668f4c6e06ec1eb8529c24",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 5,
+          "created_at": 1793000010,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "del-own"
+        },
+        {
+          "id": "bebdb0452d6edec75f8dd617d9a33695d60645b2c64fbf3be0d99b244da51958",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 5,
+          "created_at": 1793000011,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "cac0b730925de4bd9e733d9d9afb48fbd18ade85d6ec2b501fdcd77905313f8f"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "del-other"
+        },
+        {
+          "id": "d53441c2a9fdf9c2c7d76d123acf320180fd241de2b23ec2005d882e93782ec5",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 9005,
+          "created_at": 1793000012,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "mod-remove"
+        }
+      ],
+      "expect": {
+        "messages": [
+          {
+            "id": "cac0b730925de4bd9e733d9d9afb48fbd18ade85d6ec2b501fdcd77905313f8f",
+            "text": "two",
+            "media": [],
+            "topics": []
+          },
+          {
+            "id": "725edb8cf4ade8e6f5d76fff06c64ccf07628fe8875eed381820919fdef9995c",
+            "text": "look #beach",
+            "media": [
+              {
+                "url": "https://blossom.example.org/0f3c.jpg",
+                "mime": "image/jpeg",
+                "name": "beach.jpg",
+                "w": 640,
+                "h": 480
+              }
+            ],
+            "topics": [
+              "beach"
+            ]
+          },
+          {
+            "id": "fd9f6dc750f273bd898e7bc012c7fce195c224744e26564210979d89f2c7c6f5",
+            "text": "bad media",
+            "media": [],
+            "topics": []
+          }
+        ]
+      }
+    }
+  ]
+}

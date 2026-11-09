@@ -1,0 +1,429 @@
+{
+  "about": "The events a user action queues (before the client tag [\"client\", …] is appended and before signing). target: \"groups\" = the NIP-29 groups relay, \"main\" = the community relay.",
+  "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
+  "people": {
+    "alice": {
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    "bob": {
+      "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+      "secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "npub": "npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e"
+    },
+    "carol": {
+      "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+      "secret": "476900b1b1d624890192378df6d230650f10f196ebe53e56090b80623c4a979e",
+      "npub": "npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y"
+    },
+    "dave": {
+      "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+      "secret": "e19f850a85f1f08266b75695819802703ed6c27192f0c58d9ef13b86c156a157",
+      "npub": "npub16p8emttu7fmqssp5dkfftlfk47nwfaqzff3x5fe2pe4h4ypc7g6qs8qtyz"
+    },
+    "erin": {
+      "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+      "secret": "45da4ddbb3358f8a5468d8c9abcedaf6617e7707cd1ad48c54d78d43d34530ab",
+      "npub": "npub1rpxa9u35smhsgecekx20nd6lrcllqtvdxgq7le0dxsdr2kt0cqhq67fgjc"
+    },
+    "zoe": {
+      "pubkey": "29c456025fce8b93474c37cf431942a940c08ede1ad41c6112fc3d6ebdf1bfbc",
+      "secret": "9b03d960dfba22af93e03feccf7b7de1db287952e17e8d6bf83b7d42c3a2c336",
+      "npub": "npub198z9vqjle69ex36vxl85xx2z49qvprk7rt2pccgjls7ka003h77qmnuka3"
+    },
+    "relay": {
+      "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+      "secret": "4f905f77219cd34450e308030694a9824a789b5ec1efcd0abc4a770458283471",
+      "npub": "npub1jkwzggpt9drxqt8cv9xymyc02u23s4glhufpjv9nwx3v5vsmahwsepnd0w"
+    },
+    "groups": {
+      "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+      "secret": "4597d01767f5ebe26e3605f653d5f9d300dab74014983f12a3265016849283c5",
+      "npub": "npub1ljeyka6mttcngcrfm2pa2m9zc2xmvt444fs6sgmn6zvqzfqq3epq7rhaer"
+    },
+    "bridge": {
+      "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "secret": "f42b316fb4b50e20336569f7afe527faa18b5aa6b8e9122b79ba9bb8823bb014",
+      "npub": "npub167e7unx349s9ekpycus73ktw2r9z5gmmsrjgdmrdx46t3x3awf4s0ctktg"
+    }
+  },
+  "slug_examples": [
+    {
+      "name": "Book club",
+      "slug": "book-club"
+    },
+    {
+      "name": "Été 2027!",
+      "slug": "e-te-2027"
+    },
+    {
+      "name": "***",
+      "slug": "channel-000000"
+    },
+    {
+      "name": "A very long channel name that goes on and on",
+      "slug": "a-very-long-channel-name-that-go"
+    }
+  ],
+  "cases": [
+    {
+      "action": "postMessage",
+      "args": {
+        "group": "general",
+        "text": "Hi #Garden nostr:npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e",
+        "topic": "Plans",
+        "announce": true
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9,
+          "content": "Hi #Garden nostr:npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "t",
+              "plans"
+            ],
+            [
+              "t",
+              "announcement"
+            ],
+            [
+              "t",
+              "garden"
+            ],
+            [
+              "p",
+              "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "postMessage",
+      "args": {
+        "group": "general",
+        "text": "plain"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9,
+          "content": "plain",
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "postThreadReply",
+      "args": {
+        "group": "general",
+        "root": {
+          "id": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 9
+        },
+        "text": "ok nostr:npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y #later"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 1111,
+          "content": "ok nostr:npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y #later",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "t",
+              "later"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "react",
+      "args": {
+        "group": "general",
+        "message": {
+          "id": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+        },
+        "emoji": "🎉"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 7,
+          "content": "🎉",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584"
+            ],
+            [
+              "p",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "k",
+              "9"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "unreact",
+      "args": {
+        "group": "general",
+        "reaction": "c4f7498c15ba4d1da2ac26584940b4ee60568bed0fcf8c955774d187c18daee7"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 5,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "c4f7498c15ba4d1da2ac26584940b4ee60568bed0fcf8c955774d187c18daee7"
+            ],
+            [
+              "k",
+              "7"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "deleteMessage",
+      "args": {
+        "group": "general",
+        "message": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 5,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "editChannel",
+      "args": {
+        "group": "general",
+        "name": "General",
+        "about": "Say hi"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9002,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "name",
+              "General"
+            ],
+            [
+              "about",
+              "Say hi"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "setInbox",
+      "args": {
+        "group": "general",
+        "on": true
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 30078,
+          "content": "{\"on\":true}",
+          "tags": [
+            [
+              "d",
+              "belfry:inbox"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "joinGroup",
+      "args": {
+        "group": "garden"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9021,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "garden"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "leaveGroup",
+      "args": {
+        "group": "garden"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9022,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "garden"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "createChannel",
+      "args": {
+        "name": "Book club",
+        "about": "Monthly",
+        "id": "book-club-0000"
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 9007,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "book-club-0000"
+            ]
+          ]
+        },
+        {
+          "target": "groups",
+          "kind": 9002,
+          "content": "",
+          "tags": [
+            [
+              "h",
+              "book-club-0000"
+            ],
+            [
+              "name",
+              "Book club"
+            ],
+            [
+              "about",
+              "Monthly"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "markSeen",
+      "args": {
+        "group": "general",
+        "now": 1793086400
+      },
+      "events": [
+        {
+          "target": "groups",
+          "kind": 30078,
+          "content": "",
+          "tags": [
+            [
+              "d",
+              "seen:general"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "about": "\"N active this month\": who opened (kind 30078 d=seen:<channel>, h=<channel>) or wrote (9, 1111, 7) in a channel in the last 30 days, most recent first; with a member list (members + admins), only those people. mySeen = my latest seen event for the channel. A client sends its seen event at most every 6 hours per channel.",
+  "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
+  "people": {
+    "alice": {
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    "bob": {
+      "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+      "secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "npub": "npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e"
+    },
+    "carol": {
+      "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+      "secret": "476900b1b1d624890192378df6d230650f10f196ebe53e56090b80623c4a979e",
+      "npub": "npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y"
+    },
+    "dave": {
+      "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+      "secret": "e19f850a85f1f08266b75695819802703ed6c27192f0c58d9ef13b86c156a157",
+      "npub": "npub16p8emttu7fmqssp5dkfftlfk47nwfaqzff3x5fe2pe4h4ypc7g6qs8qtyz"
+    },
+    "erin": {
+      "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+      "secret": "45da4ddbb3358f8a5468d8c9abcedaf6617e7707cd1ad48c54d78d43d34530ab",
+      "npub": "npub1rpxa9u35smhsgecekx20nd6lrcllqtvdxgq7le0dxsdr2kt0cqhq67fgjc"
+    },
+    "zoe": {
+      "pubkey": "29c456025fce8b93474c37cf431942a940c08ede1ad41c6112fc3d6ebdf1bfbc",
+      "secret": "9b03d960dfba22af93e03feccf7b7de1db287952e17e8d6bf83b7d42c3a2c336",
+      "npub": "npub198z9vqjle69ex36vxl85xx2z49qvprk7rt2pccgjls7ka003h77qmnuka3"
+    },
+    "relay": {
+      "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+      "secret": "4f905f77219cd34450e308030694a9824a789b5ec1efcd0abc4a770458283471",
+      "npub": "npub1jkwzggpt9drxqt8cv9xymyc02u23s4glhufpjv9nwx3v5vsmahwsepnd0w"
+    },
+    "groups": {
+      "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+      "secret": "4597d01767f5ebe26e3605f653d5f9d300dab74014983f12a3265016849283c5",
+      "npub": "npub1ljeyka6mttcngcrfm2pa2m9zc2xmvt444fs6sgmn6zvqzfqq3epq7rhaer"
+    },
+    "bridge": {
+      "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "secret": "f42b316fb4b50e20336569f7afe527faa18b5aa6b8e9122b79ba9bb8823bb014",
+      "npub": "npub167e7unx349s9ekpycus73ktw2r9z5gmmsrjgdmrdx46t3x3awf4s0ctktg"
+    }
+  },
+  "cases": [
+    {
+      "name": "members only, 30 days",
+      "me": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "now": 1796456000,
+      "group": "general",
+      "events": [
+        {
+          "id": "b792503df8735dd971ac443c49b4df2ae1f79351736bdb227e22e05069a127e6",
+          "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+          "kind": 39002,
+          "created_at": 1793000000,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "p",
+              "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+            ],
+            [
+              "p",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "members"
+        },
+        {
+          "id": "a7465d237aa0ab6b64f746e3e17d9722b4484edf1e3acdb4703ab8837559c619",
+          "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+          "kind": 39001,
+          "created_at": 1793000000,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "p",
+              "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "admins"
+        },
+        {
+          "id": "e7c1a09c3ee34ca0c76f1c8bde270206f111c580593045e5692d557eb9ed29fd",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 9,
+          "created_at": 1796369600,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "hi",
+          "sig": "",
+          "_label": "alice-msg"
+        },
+        {
+          "id": "3ca6c3f97465ee3c6d7ac8818ac8f43bb2c33c23e9bfcc48420ffb6a22f3c68f",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 30078,
+          "created_at": 1796283200,
+          "tags": [
+            [
+              "d",
+              "seen:general"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "bob-seen"
+        },
+        {
+          "id": "75f5070f0485816618a9ee39f08a6cc21198bd4978f4e8235047132d22e28f04",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 1111,
+          "created_at": 1796452400,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "e7c1a09c3ee34ca0c76f1c8bde270206f111c580593045e5692d557eb9ed29fd"
+            ]
+          ],
+          "content": "yo",
+          "sig": "",
+          "_label": "bob-reply"
+        },
+        {
+          "id": "b9233dd44cfb6fc092c0b720791eb045694a94f8840c27d0cd30acafee13b641",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 7,
+          "created_at": 1793777600,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "e7c1a09c3ee34ca0c76f1c8bde270206f111c580593045e5692d557eb9ed29fd"
+            ]
+          ],
+          "content": "👍",
+          "sig": "",
+          "_label": "carol-old"
+        },
+        {
+          "id": "852ae36e165f3d6a2f37c42d994dae92a5fb09834f2ca56fc9cb0ada832cf38d",
+          "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+          "kind": 9,
+          "created_at": 1796196800,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "client",
+              "belfry-mail"
+            ]
+          ],
+          "content": "a card",
+          "sig": "",
+          "_label": "dave-msg-not-member"
+        },
+        {
+          "id": "c677957f33f0d30ca935a45398ce4d5528f22b3b0863aa59bad7a97f433cb07e",
+          "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+          "kind": 30078,
+          "created_at": 1796110400,
+          "tags": [
+            [
+              "d",
+              "seen:general"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "erin-seen"
+        },
+        {
+          "id": "608a9a16be6d21fb7454d89adcc72e603f257670523a6e73e67db46f76bf8771",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 30078,
+          "created_at": 1796024000,
+          "tags": [
+            [
+              "d",
+              "seen:general"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "alice-seen"
+        },
+        {
+          "id": "13c92a87dbd6b10ffe33ba26bc6c1048b8e5f2b2f4465970ba2d411876659c16",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 30078,
+          "created_at": 1796369600,
+          "tags": [
+            [
+              "d",
+              "seen:garden"
+            ],
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "bob-seen-other"
+        },
+        {
+          "id": "3959703f69f829ae695d54ccc33c7b0ea314e8ee5c371545d12084019cdbc958",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 0,
+          "created_at": 1796369600,
+          "tags": [],
+          "content": "{\"name\":\"Carol\"}",
+          "sig": "",
+          "_label": "carol-profile"
+        }
+      ],
+      "expect": {
+        "recently_active": [
+          {
+            "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+            "at": 1796452400
+          },
+          {
+            "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+            "at": 1796369600
+          },
+          {
+            "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+            "at": 1796196800
+          },
+          {
+            "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+            "at": 1796110400
+          }
+        ],
+        "my_seen": 1796024000
+      }
+    },
+    {
+      "name": "no member list: everyone counts",
+      "me": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "now": 1796456000,
+      "group": "lobby",
+      "events": [
+        {
+          "id": "9343276728e010847e1542b12fc78d6ad01ca1684295f07786cdcca0c026e7ac",
+          "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+          "kind": 30078,
+          "created_at": 1796369600,
+          "tags": [
+            [
+              "d",
+              "seen:lobby"
+            ],
+            [
+              "h",
+              "lobby"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "x-seen"
+        },
+        {
+          "id": "1c91a18e2ce0272125c115a8bdabdbee133c5b7cfce5d4ded6923877a129bc19",
+          "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+          "kind": 7,
+          "created_at": 1796283200,
+          "tags": [
+            [
+              "h",
+              "lobby"
+            ],
+            [
+              "e",
+              "f37fecfbd29d706595f5d0a03061e88625f13a8b5b80e86f4f108f8f1b8f1662"
+            ]
+          ],
+          "content": "🔥",
+          "sig": "",
+          "_label": "y-react"
+        }
+      ],
+      "expect": {
+        "recently_active": [
+          {
+            "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+            "at": 1796369600
+          },
+          {
+            "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+            "at": 1796283200
+          }
+        ]
+      }
+    }
+  ]
+}

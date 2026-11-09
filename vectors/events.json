@@ -1,0 +1,238 @@
+{
+  "about": "Nostr basics: event id = sha256 of [0,pubkey,created_at,kind,tags,content] serialized as compact JSON (NIP-01 escaping); BIP-340 signatures; npub/nsec (NIP-19); NIP-59 gift wraps carrying a NIP-17 message (kind 14) and a Nostr Mail (kind 1301) from the belfry's bridge. Unwrap: wrap (NIP-44 with the wrap's one-time key) → seal (kind 13, signature checked) → rumor; drop it if rumor.pubkey ≠ seal.pubkey.",
+  "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
+  "people": {
+    "alice": {
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    "bob": {
+      "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+      "secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "npub": "npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e"
+    },
+    "carol": {
+      "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+      "secret": "476900b1b1d624890192378df6d230650f10f196ebe53e56090b80623c4a979e",
+      "npub": "npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y"
+    },
+    "dave": {
+      "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+      "secret": "e19f850a85f1f08266b75695819802703ed6c27192f0c58d9ef13b86c156a157",
+      "npub": "npub16p8emttu7fmqssp5dkfftlfk47nwfaqzff3x5fe2pe4h4ypc7g6qs8qtyz"
+    },
+    "erin": {
+      "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+      "secret": "45da4ddbb3358f8a5468d8c9abcedaf6617e7707cd1ad48c54d78d43d34530ab",
+      "npub": "npub1rpxa9u35smhsgecekx20nd6lrcllqtvdxgq7le0dxsdr2kt0cqhq67fgjc"
+    },
+    "zoe": {
+      "pubkey": "29c456025fce8b93474c37cf431942a940c08ede1ad41c6112fc3d6ebdf1bfbc",
+      "secret": "9b03d960dfba22af93e03feccf7b7de1db287952e17e8d6bf83b7d42c3a2c336",
+      "npub": "npub198z9vqjle69ex36vxl85xx2z49qvprk7rt2pccgjls7ka003h77qmnuka3"
+    },
+    "relay": {
+      "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+      "secret": "4f905f77219cd34450e308030694a9824a789b5ec1efcd0abc4a770458283471",
+      "npub": "npub1jkwzggpt9drxqt8cv9xymyc02u23s4glhufpjv9nwx3v5vsmahwsepnd0w"
+    },
+    "groups": {
+      "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+      "secret": "4597d01767f5ebe26e3605f653d5f9d300dab74014983f12a3265016849283c5",
+      "npub": "npub1ljeyka6mttcngcrfm2pa2m9zc2xmvt444fs6sgmn6zvqzfqq3epq7rhaer"
+    },
+    "bridge": {
+      "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "secret": "f42b316fb4b50e20336569f7afe527faa18b5aa6b8e9122b79ba9bb8823bb014",
+      "npub": "npub167e7unx349s9ekpycus73ktw2r9z5gmmsrjgdmrdx46t3x3awf4s0ctktg"
+    }
+  },
+  "bech32": [
+    {
+      "hex": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    {
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "nsec": "nsec1scj3nkdq4h48p098geczh4y4m8cz3ews3ssg9yfqkynmjlhtxcfqdn8m00"
+    }
+  ],
+  "signed": {
+    "event": {
+      "kind": 9,
+      "created_at": 1793000000,
+      "tags": [
+        [
+          "h",
+          "general"
+        ],
+        [
+          "client",
+          "belfry-ios"
+        ]
+      ],
+      "content": "Hello \"world\"\n\\ é 🎉",
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "id": "98372d839016cbbe7c880c8f9a6efd8091587c802271cac6d814c659566726cc",
+      "sig": "ee118e52f3b597f8868e7abb8972f3c89065612cd9c636efa0844b5bfacb9bd6a27961e4a2690c9ca27d7aa7c4d1cb44e8530954ffbd281302effc5fcdad3829"
+    },
+    "id_ok": true,
+    "valid": true
+  },
+  "tampered": {
+    "event": {
+      "kind": 9,
+      "created_at": 1793000000,
+      "tags": [
+        [
+          "h",
+          "general"
+        ],
+        [
+          "client",
+          "belfry-ios"
+        ]
+      ],
+      "content": "Hello \"world\"\n\\ é 🎉!",
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "id": "98372d839016cbbe7c880c8f9a6efd8091587c802271cac6d814c659566726cc",
+      "sig": "ee118e52f3b597f8868e7abb8972f3c89065612cd9c636efa0844b5bfacb9bd6a27961e4a2690c9ca27d7aa7c4d1cb44e8530954ffbd281302effc5fcdad3829"
+    },
+    "valid": false
+  },
+  "id_only": [
+    {
+      "template": {
+        "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+        "kind": 9,
+        "created_at": 1793000000,
+        "tags": [
+          [
+            "h",
+            "general"
+          ],
+          [
+            "client",
+            "belfry-ios"
+          ]
+        ],
+        "content": "Hello \"world\"\n\\ é 🎉",
+        "id": "98372d839016cbbe7c880c8f9a6efd8091587c802271cac6d814c659566726cc",
+        "sig": "ee118e52f3b597f8868e7abb8972f3c89065612cd9c636efa0844b5bfacb9bd6a27961e4a2690c9ca27d7aa7c4d1cb44e8530954ffbd281302effc5fcdad3829"
+      },
+      "id": "98372d839016cbbe7c880c8f9a6efd8091587c802271cac6d814c659566726cc"
+    }
+  ],
+  "gift_wraps": [
+    {
+      "name": "NIP-17 message from alice to bob",
+      "recipient_secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "wrap": {
+        "kind": 1059,
+        "created_at": 1792998005,
+        "tags": [
+          [
+            "p",
+            "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+          ]
+        ],
+        "content": "AkvYr8EHSUPLaQ35i6C4lxeW3lQU8b3oZ2Kk4EyrX2/ctnePTDj2iyVkiX3lyTNhstMxRd3KwWoxASi2gw6aadFSEBEv6Y4/CcANqriVwp16KqgM8dUaybpaHVD7xDxhSGACcBh3qcSYhx5TagSn2dnwLZ9Ub8gy/bBJ2Jkin8lRd+0ibJzsOxCoRep//YXQqLbAAUw/dtE2KkUbrhf6T7+Yx/EmUoW9DavAwN/V2ptU4b/RdoKy7kWfLkD7n29/vzhsEq4ywGPyWQ2hwTKNl3f7rWW0V3Gt9XUvaHHNpzEFhRXQOMuWj3ePJc02Nw0VKIt8KQrjiskyX25eTrzTp3+VCBS2QwlpV/L0Alk5dKeO+wp46dwvZC4I6/CP4g8CfqhuU+EKQbVAlKi46PFKmQwtbfWCd3Nq/a8HcyGhEbn5bbO5fB7BHoQbnTv5J5atElPi8T7769fx1RKH4v+93C3RZsgSC1ruOAiEJMMofxjA+OGST0iq5NIW3DDBGO+L0lDIySnry2lhgBI+W6k2Pbeg/41khFuS97N7fRi8XoY/bJYoLyFBrHos/4FSsBBd/mEJ6DMOlAI4XpB9z3CFVwRp8kMPacChI41j9phAXf5g8XzS0szPMcJW3WGYChMIhZu56V0fgbEyXjTowVZzwnYVy+wAfwayIB5585QIegy6nSZjc0iiVJOeHlmKS3VlW8ThOLvsIapEUfHn8U0AdhUfejmpfHnKxFjP0atHQFRVeFGQzlZelc3LfmMU6oryB0mP0xBuWMT0JhQrt4uRsi6vSqASsHtUFIy6UXjhNSeOGaN6ot6W2fL8THQ2FEoiWasNVolcPYgTY0Z/RdaMbAj27U/okds93W0CUzWnB08hirL7oVtInolRnvRoNiwpfwRhiVS8BSrJPgZn7XRLi4TkwLUDaBqNAIcJIlShTVBO7D7ut52Urr0Cek0X7PJ39d2qgWuPDhmGflkTqt4DTeOC3Z1LY+59qxbrTjIXfmHrSgT0yd7MA15DTrwjV5hWx+J8qEWYpd3geJT+bMgxyFlPu9ZWeo3sRPVaH0C57pltC+zm4airG9012EFQfHntx7fThWUloldIQu8tcvZ0mg2zvBANiAc6xQOJ5nSTgr6ogsdWk5DuH+s+pZz0BM/FO9rHkfqxfDimRmw0hoA90xXqQL/TsEBucpPqO9Ir5ycGlIX2PevWYJsnbclXYlcS3wth7sF4fymxjAPRijqAJB7r6Ngo+nNiSxiVYq08ZRZyXcLKcTowfIkAsKYJUxO0vnx2",
+        "pubkey": "24d24551f56764721ceec47262d10bf340cb811431fcb42d53c933fe8631d962",
+        "id": "ee6b787ee288dea11b4f45d9c53460c0e841cc9f96b59c3bb914924972f84dd6",
+        "sig": "fee09616537e918b71e943a1c4a9a122469c0622424ffffe22152d58d677efc79a0e093360bfdb4a5ee10ec38918ce41fdb44d1e231e26aa3d1683d9e3387b81"
+      },
+      "expect": {
+        "rumor": {
+          "kind": 14,
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "created_at": 1793000005,
+          "tags": [
+            [
+              "p",
+              "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+            ]
+          ],
+          "content": "Hi Bob, a private hello",
+          "id": "62747c81f044995adb0e12e4727470550a116bc33bdaaa3d9b4f9dd6b329bfd0"
+        },
+        "seal_pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+      }
+    },
+    {
+      "name": "e-mail from the bridge to bob",
+      "recipient_secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "bridge": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "wrap": {
+        "kind": 1059,
+        "created_at": 1792998006,
+        "tags": [
+          [
+            "p",
+            "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+          ]
+        ],
+        "content": "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",
+        "pubkey": "2014fd894f4c6d81e13b37a37a02022ad4a6991ac0bdaf56147a70f319442c6e",
+        "id": "20b16caf2ffe4acf80e6489c949b72b092f951712416e0c258075c05527267a4",
+        "sig": "efb6b966004533068a723487b84a0a316a64fed60b60aab968ac2a80f842da0e40af40cc71dfb76f83882d4c9dcba44135d1f53dff3250e5affef4e69b680b58"
+      },
+      "expect": {
+        "rumor": {
+          "kind": 1301,
+          "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+          "created_at": 1793000006,
+          "tags": [
+            [
+              "email-id",
+              "6f1c2a9e-0000-4000-8000-000000000001"
+            ],
+            [
+              "mail-from",
+              "ana@example.org"
+            ],
+            [
+              "p",
+              "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+            ],
+            [
+              "subject",
+              "Hello"
+            ],
+            [
+              "belfry-auth",
+              "pass"
+            ]
+          ],
+          "content": "From: \"Ana\" <ana@example.org>\r\nTo: <bob@example.org>\r\nSubject: Hello\r\nMessage-ID: <a1@example.org>\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nHi from e-mail\r\n",
+          "id": "a219efadb070d31b11f7662f17bb5c161ed3856c8b6a8032bc9168314f4eb24d"
+        },
+        "seal_pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+        "conv": "m:ana@example.org|hello"
+      }
+    },
+    {
+      "name": "rumor in someone else's name",
+      "recipient_secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "wrap": {
+        "kind": 1059,
+        "created_at": 1792998007,
+        "tags": [
+          [
+            "p",
+            "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e"
+          ]
+        ],
+        "content": "Ar+D0zOS0eLbcMM+4i4OPII9paMABnY7/X3BQmpjcx4ouIrtFY43Sx9q+SLIjqoKUERit4aVHo195kPCoo53yw4Dfsq+k6teDEFqRzomtRsHMvd4ZKaKjmqAIRmJVK59jWw0EzPTHXsydRVT3JXM/SmLKpuE6UhVVBWaSb9EFX8giwICbDDABShNz66T7tVShS0/6pDqFNsqHWvJAgoWwJziWtoUy7GvJbXMEYV9kBtXq7UMhc2cT0Hc0o2ukmt5R44qGKnAmFiolauajw7M9CWjR/ErIPsQm0Va2DkCEEKfrP6CMYB1YbVygImvHtq8kBYDBtWkhEd3yIxCqr0lY5cdZHnnpaFh+gtVR3TJXa+yyMjJPcCSMmiOn0LYCa/a9fqhPqGMrTRmOb5lC5e31EN0avstSFboznvoEJIdjmAFkuDZy2hMKDNit8tgqJNvg/38s9fJwHosLmomqKA1+Do9uPGd286OO6mZ7URGNg0tBD3hrE91PlMlSHswDUue+muOhUcY9S6LrASJiGCSO8cKwsWnQgUxsLb/bEioIqatGfzQOK70mc2MjIrVRAFbWBbLK/9IUF/2a54Uwm5SLXyVBZOrl2VVBrXVYmWBvtz8GV0/OqDE3aOjGy1MlTbxGFZOeuCCWcBp/93myJ7bzsUShu4a+BQMM960gbmZuK69dNvfX9j9GrszO0J1m/gwl4hVzpL2RMnOIdaTyHVHGEGR0chjZJxKHF66M6jlvKW52y+UbXnBvVxuPypN1XLOwCq3vsQlTE6JTQ8sC7GuOACIBCa8nq7WNhHO8ewCFwZO2JNDWueW/sDDZGhtiI+o3tXEGEYapyY3M9R4Q+WACEODNXl/wML/UtjE5GSqHkUu7wDI0xVQc8crU091EnzUTXcEmyOwAhRWjwAVW1ysIqXz89FZ1nb4AKX+5bL+eZd9piAkPV+5GYLESK5vSRxI66Y6blpqgUNwI5T8HZknRo7fpHNi1BBEmWxKogffc3Lwx3//cyYiq4xNQGjFHXK4Bj8CDqN3yETjbv6bdcHp42I+428HxbKsoP4Bw2wlW8yBBNeP4DhI5JlFab9ol6pazmHn4UZinKNXWztBZtP+yC43/91Woo0FOjN4UJDGILTzCtA+R57yXzvkQWGw2jp78x/AZFAbGgh21fJEm5b6rMQE8NXfAIbxcTjrQ6cFvPpJXW8E8pW7JS1EvDvbqwrpzTA2vuPL5PYXXiVOpRjRPE3LtjBCbuV22ooTA6C95nBaDQ77akiP2c8Qqj95sIrwBugT",
+        "pubkey": "8ab61bdd981a7c596ee2aa8920f63bbc3cb19c2a43b2608daaefd6f984fa35dc",
+        "id": "19766793a3079e21bf0f8a2f656c87dfeb0b5cef0dde126626c6fca90f9abbc5",
+        "sig": "d86eb5579d43590c3dd3c171c72d4a8ac056ff3cc1c54dd1885cd964ff1bef1472888d97baf5aa18fae08b593e77f81197d36b5630dae6c83d210ca1751d1e81"
+      },
+      "expect": {
+        "rumor": null,
+        "seal_pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+      }
+    }
+  ],
+  "hex_check": true
+}

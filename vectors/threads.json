@@ -1,0 +1,700 @@
+{
+  "about": "NIP-22 threads (kind 1111, E = root message) in a group: per-root count/last/who; replies oldest first; the feed with guest joins and resurfaced threads (\"act\": an older thread shows again at its latest reply when other messages came between the root and that reply). Inline: the latest 3 replies, the rest on demand.",
+  "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
+  "people": {
+    "alice": {
+      "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "secret": "862519d9a0adea70bca746702bd495d9f028e5d08c20829120b127b97eeb3612",
+      "npub": "npub1grxu0284gqp442wne5jjc7qtdcmttw2czhdmg5ff39de8j5w5peq6d55at"
+    },
+    "bob": {
+      "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+      "secret": "caa666b3ba9ab485be8faa4efd49ceea1078e399589062577a5992e6ed8dfe60",
+      "npub": "npub1lr5z6l496gt0j08z2ylxwjz96la8ws5phv4cxrn7ue3ekzlvry8qxf503e"
+    },
+    "carol": {
+      "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+      "secret": "476900b1b1d624890192378df6d230650f10f196ebe53e56090b80623c4a979e",
+      "npub": "npub1dfuq36c7y49ghzeujtq9jcrvgkrl9p938qnsh8cj48rj4txhmf8s239n5y"
+    },
+    "dave": {
+      "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+      "secret": "e19f850a85f1f08266b75695819802703ed6c27192f0c58d9ef13b86c156a157",
+      "npub": "npub16p8emttu7fmqssp5dkfftlfk47nwfaqzff3x5fe2pe4h4ypc7g6qs8qtyz"
+    },
+    "erin": {
+      "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+      "secret": "45da4ddbb3358f8a5468d8c9abcedaf6617e7707cd1ad48c54d78d43d34530ab",
+      "npub": "npub1rpxa9u35smhsgecekx20nd6lrcllqtvdxgq7le0dxsdr2kt0cqhq67fgjc"
+    },
+    "zoe": {
+      "pubkey": "29c456025fce8b93474c37cf431942a940c08ede1ad41c6112fc3d6ebdf1bfbc",
+      "secret": "9b03d960dfba22af93e03feccf7b7de1db287952e17e8d6bf83b7d42c3a2c336",
+      "npub": "npub198z9vqjle69ex36vxl85xx2z49qvprk7rt2pccgjls7ka003h77qmnuka3"
+    },
+    "relay": {
+      "pubkey": "959c24202b2b46602cf8614c4d930f571518551fbf121930b371a2ca321beddd",
+      "secret": "4f905f77219cd34450e308030694a9824a789b5ec1efcd0abc4a770458283471",
+      "npub": "npub1jkwzggpt9drxqt8cv9xymyc02u23s4glhufpjv9nwx3v5vsmahwsepnd0w"
+    },
+    "groups": {
+      "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+      "secret": "4597d01767f5ebe26e3605f653d5f9d300dab74014983f12a3265016849283c5",
+      "npub": "npub1ljeyka6mttcngcrfm2pa2m9zc2xmvt444fs6sgmn6zvqzfqq3epq7rhaer"
+    },
+    "bridge": {
+      "pubkey": "d7b3ee4cd1a9605cd824c721e8d96e50ca2a237b80e486ec6d3574b89a3d726b",
+      "secret": "f42b316fb4b50e20336569f7afe527faa18b5aa6b8e9122b79ba9bb8823bb014",
+      "npub": "npub167e7unx349s9ekpycus73ktw2r9z5gmmsrjgdmrdx46t3x3awf4s0ctktg"
+    }
+  },
+  "cases": [
+    {
+      "name": "replies, resurfacing and a guest join",
+      "me": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "group": "general",
+      "events": [
+        {
+          "id": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 9,
+          "created_at": 1793000000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "Who has a ladder?",
+          "sig": "",
+          "_label": "m1"
+        },
+        {
+          "id": "cac0b730925de4bd9e733d9d9afb48fbd18ade85d6ec2b501fdcd77905313f8f",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 9,
+          "created_at": 1793000060,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "Lunch at noon",
+          "sig": "",
+          "_label": "m2"
+        },
+        {
+          "id": "c4d431d0a7da10cbb863fcc9afd1467dc23b7e5338e3cbdbd392762faccb2d00",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 1111,
+          "created_at": 1793000090,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "I do",
+          "sig": "",
+          "_label": "r1"
+        },
+        {
+          "id": "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 9,
+          "created_at": 1793000120,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "Rain tomorrow",
+          "sig": "",
+          "_label": "m3"
+        },
+        {
+          "id": "a8263bf1f7cec84b3da38bd9aa9e3afead14ff41aef2cc33f80b9c42fe83356a",
+          "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+          "kind": 1111,
+          "created_at": 1793000130,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d",
+              "",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "e",
+              "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d",
+              "",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ]
+          ],
+          "content": "Bring boots",
+          "sig": "",
+          "_label": "r2"
+        },
+        {
+          "id": "0b54660aa0c0b20729e0025f2645d28af55d72273771ab243ebdd8f2bdcfd631",
+          "pubkey": "fcb24b775b5af1346069da83d56ca2c28db62eb5aa61a82373d0980124008e42",
+          "kind": 9000,
+          "created_at": 1793000200,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+              "member"
+            ],
+            [
+              "guest",
+              ""
+            ],
+            [
+              "invited-by",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "name",
+              "Erin"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "guest"
+        },
+        {
+          "id": "6ac6a77d805d337724c4b378c4777181640de6ea5506a52305d89c34a1702a48",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 1111,
+          "created_at": 1793000300,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "Me too",
+          "sig": "",
+          "_label": "r3"
+        },
+        {
+          "id": "288f3f8a3f8e24a17c3de641030dc5053306fed46ee7b5083b3a2ca335a43a68",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 1111,
+          "created_at": 1793000301,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "deleted later",
+          "sig": "",
+          "_label": "r4"
+        },
+        {
+          "id": "d54e591b5a957b570ed03c9611fdf38dbc89a9fc329d02e387af01a5839491ac",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 5,
+          "created_at": 1793000302,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "288f3f8a3f8e24a17c3de641030dc5053306fed46ee7b5083b3a2ca335a43a68"
+            ]
+          ],
+          "content": "",
+          "sig": "",
+          "_label": "del-r4"
+        },
+        {
+          "id": "8e9e2bf484ceb7d7952c4ff5e8d9d44fd6e7ef386bff2fcaff94946b8d952641",
+          "pubkey": "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234",
+          "kind": 1111,
+          "created_at": 1793000400,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "39369c10260e6a46f671b87746ee8f7da22f8d8793ac09e15493cde94f75ccaa",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "39369c10260e6a46f671b87746ee8f7da22f8d8793ac09e15493cde94f75ccaa",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "orphan",
+          "sig": "",
+          "_label": "rx"
+        }
+      ],
+      "expect": {
+        "threads": {
+          "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584": {
+            "count": 2,
+            "last": 1793000300,
+            "who": [
+              "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+              "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f"
+            ]
+          },
+          "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d": {
+            "count": 1,
+            "last": 1793000130,
+            "who": [
+              "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234"
+            ]
+          },
+          "39369c10260e6a46f671b87746ee8f7da22f8d8793ac09e15493cde94f75ccaa": {
+            "count": 1,
+            "last": 1793000400,
+            "who": [
+              "d04f9dad7cf2760840346d9295fd36afa6e4f4024a626a272a0e6b7a9038f234"
+            ]
+          }
+        },
+        "replies": {
+          "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584": [
+            "c4d431d0a7da10cbb863fcc9afd1467dc23b7e5338e3cbdbd392762faccb2d00",
+            "6ac6a77d805d337724c4b378c4777181640de6ea5506a52305d89c34a1702a48"
+          ],
+          "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d": [
+            "a8263bf1f7cec84b3da38bd9aa9e3afead14ff41aef2cc33f80b9c42fe83356a"
+          ],
+          "39369c10260e6a46f671b87746ee8f7da22f8d8793ac09e15493cde94f75ccaa": [
+            "8e9e2bf484ceb7d7952c4ff5e8d9d44fd6e7ef386bff2fcaff94946b8d952641"
+          ]
+        },
+        "feed": [
+          {
+            "t": "msg",
+            "id": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+            "at": 1793000000
+          },
+          {
+            "t": "msg",
+            "id": "cac0b730925de4bd9e733d9d9afb48fbd18ade85d6ec2b501fdcd77905313f8f",
+            "at": 1793000060
+          },
+          {
+            "t": "msg",
+            "id": "fbd38dc64ea451ab51ba634dd165e069db3d636cd821eb11319454a7d89a212d",
+            "at": 1793000120
+          },
+          {
+            "t": "join",
+            "id": "0b54660aa0c0b20729e0025f2645d28af55d72273771ab243ebdd8f2bdcfd631",
+            "pubkey": "184dd2f23486ef046719b194f9b75f1e3ff02d8d3201efe5ed341a35596fc02e",
+            "by": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+            "at": 1793000200
+          },
+          {
+            "t": "act",
+            "root": "6c562b7f67d0bda49fa230a3cb14b8804ba9d3e8d8ea27eca7ff0d232516b584",
+            "last": "6ac6a77d805d337724c4b378c4777181640de6ea5506a52305d89c34a1702a48",
+            "at": 1793000300
+          }
+        ]
+      }
+    },
+    {
+      "name": "inline thread shows the latest 3",
+      "me": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+      "group": "general",
+      "events": [
+        {
+          "id": "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+          "pubkey": "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072",
+          "kind": 9,
+          "created_at": 1793000000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "Plan?",
+          "sig": "",
+          "_label": "root"
+        },
+        {
+          "id": "496f8d7d2ec49eaa6a9a8b0e79f931fec620197f0cb51ac9b1d72a17383c538b",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 1111,
+          "created_at": 1793000001,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "reply 1",
+          "sig": "",
+          "_label": "reply1"
+        },
+        {
+          "id": "2fce9f5344fb81821c33d62e5fe19f25350de592dcbc0a276f99ad6de26bfaa6",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 1111,
+          "created_at": 1793000002,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "reply 2",
+          "sig": "",
+          "_label": "reply2"
+        },
+        {
+          "id": "fcf83093cd5f0d45bc757f1f579057e3595fcc0c72df989a2bb3cc53404bdb3a",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 1111,
+          "created_at": 1793000003,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "reply 3",
+          "sig": "",
+          "_label": "reply3"
+        },
+        {
+          "id": "09584221144e0a268c4c7d004460de1a4e619280ee7c395ff1d09dd131dad659",
+          "pubkey": "6a7808eb1e254a8b8b3c92c059606c4587f284b138270b9f12a9c72aacd7da4f",
+          "kind": 1111,
+          "created_at": 1793000004,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "reply 4",
+          "sig": "",
+          "_label": "reply4"
+        },
+        {
+          "id": "e6520c82908126456611090b9b2b71e76dee3549af21cee04c498117dcd75dc9",
+          "pubkey": "f8e82d7ea5d216f93ce2513e674845d7fa774281bb2b830e7ee6639b0bec190e",
+          "kind": 1111,
+          "created_at": 1793000005,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "E",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "K",
+              "9"
+            ],
+            [
+              "P",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "e",
+              "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+              "",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ],
+            [
+              "k",
+              "9"
+            ],
+            [
+              "p",
+              "40cdc7a8f540035aa9d3cd252c780b6e36b5b95815dbb45129895b93ca8ea072"
+            ]
+          ],
+          "content": "reply 5",
+          "sig": "",
+          "_label": "reply5"
+        }
+      ],
+      "expect": {
+        "replies": {
+          "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711": [
+            "496f8d7d2ec49eaa6a9a8b0e79f931fec620197f0cb51ac9b1d72a17383c538b",
+            "2fce9f5344fb81821c33d62e5fe19f25350de592dcbc0a276f99ad6de26bfaa6",
+            "fcf83093cd5f0d45bc757f1f579057e3595fcc0c72df989a2bb3cc53404bdb3a",
+            "09584221144e0a268c4c7d004460de1a4e619280ee7c395ff1d09dd131dad659",
+            "e6520c82908126456611090b9b2b71e76dee3549af21cee04c498117dcd75dc9"
+          ]
+        },
+        "inline_visible": [
+          "fcf83093cd5f0d45bc757f1f579057e3595fcc0c72df989a2bb3cc53404bdb3a",
+          "09584221144e0a268c4c7d004460de1a4e619280ee7c395ff1d09dd131dad659",
+          "e6520c82908126456611090b9b2b71e76dee3549af21cee04c498117dcd75dc9"
+        ],
+        "inline_hidden_count": 2,
+        "feed": [
+          {
+            "t": "msg",
+            "id": "ca6ff7249c65199a4703ad50354a7c7394efb8ca8c88a76823036700db475711",
+            "at": 1793000000
+          }
+        ]
+      }
+    }
+  ]
+}
