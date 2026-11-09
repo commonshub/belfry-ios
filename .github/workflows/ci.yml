@@ -10,6 +10,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  XCODE: /Applications/Xcode_16.4.app
+
 jobs:
   core:
     name: Core tests (vectors)
@@ -18,19 +21,107 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Xcode
-        run: |
-          sudo xcode-select -s /Applications/Xcode_16.4.app || true
-          xcodebuild -version
-          swift --version
+        run: sudo xcode-select -s "$XCODE" && xcodebuild -version
       - uses: actions/cache@v4
         with:
           path: .build
           key: spm-${{ runner.os }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
       - name: swift test
-        run: swift test --parallel 2>&1 | tee swift-test.log
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tee swift-test.log
       - name: Test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: core-test-log
           path: swift-test.log
+
+  app:
+    name: App build + screenshots
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode
+        run: sudo xcode-select -s "$XCODE" && xcodebuild -version
+      - name: XcodeGen
+        run: brew install xcodegen && xcodegen generate
+      - uses: actions/cache@v4
+        with:
+          path: build/SourcePackages
+          key: spm-app-${{ runner.os }}-${{ hashFiles('Package.swift', 'project.yml') }}
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project Belfry.xcodeproj -scheme Belfry -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee xcodebuild.log | grep -E "error:|warning: .*BelfryApp|BUILD (SUCCEEDED|FAILED)" || true
+          test -d build/Build/Products/Debug-iphonesimulator/Belfry.app
+      - name: Build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: xcodebuild.log
+      - name: Screenshots
+        run: scripts/screenshots.sh build/Build/Products/Debug-iphonesimulator/Belfry.app screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+
+  testflight:
+    name: TestFlight (only with signing secrets)
+    needs: [core, app]
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - name: Secrets present?
+        id: check
+        run: |
+          if [ -n "$APPLE_TEAM_ID" ] && [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_KEY_P8" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "TestFlight skipped: add APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 (see CLAUDE.md)."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.ok == 'true'
+      - name: Archive and upload
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s "$XCODE"
+          brew install xcodegen && xcodegen generate
+          mkdir -p private_keys
+          echo "$ASC_KEY_P8" > "private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          KEY="$PWD/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          BUILD=$(( $(date +%s) / 60 ))
+          xcodebuild -project Belfry.xcodeproj -scheme Belfry -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Belfry.xcarchive \
+            -skipPackagePluginValidation -skipMacroValidation -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$BUILD" archive
+          cat > ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath build/Belfry.xcarchive -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          rm -rf private_keys
