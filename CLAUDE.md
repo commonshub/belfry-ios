@@ -63,7 +63,7 @@ invite|messages|conversation|mail|search|channels` opens a screen (used by the s
 
 ## Rules
 
-- Push freely to `commonshub/belfry-ios`. Ask before: GitHub secrets, TestFlight/App Store
+- Push freely to `opencollective/belfry-ios`. Ask before: GitHub secrets, TestFlight/App Store
   submissions, other repos, anything on the Belfry servers. Never modify `village-app` or
   `collective-belfry` from here.
 - Never print secrets. Commit messages end with the Co-Authored-By / Claude-Session lines.
