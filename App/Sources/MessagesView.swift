@@ -128,7 +128,8 @@ struct ConversationView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle(mail && !MailThreads.isNewMail(conv) ? (model.dms?.threadName(conv) ?? "") : convName(model, conv))
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { model.dms?.markRead(conv) }
+        .onAppear { model.dms?.markRead(conv); model.visibleConversation = conv }
+        .onDisappear { if model.visibleConversation == conv { model.visibleConversation = nil } }
         .onChange(of: list.count) { _, _ in model.dms?.markRead(conv) }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 6) {

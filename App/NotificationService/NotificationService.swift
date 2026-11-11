@@ -23,6 +23,15 @@ final class NotificationService: UNNotificationServiceExtension {
             var info = mutable.userInfo
             info["b"] = nil
             info["domain"] = c.domain
+            info["type"] = c.type
+            if let ch = c.channel { info["channel"] = ch }
+            // a NIP-17 self-copy of a DM this phone just sent: no sound, no banner (dropping it
+            // entirely needs Apple's notification-filtering entitlement)
+            if Push.isOwnEcho(type: c.type, lastSent: Push.lastSent, now: Int(Date().timeIntervalSince1970)) {
+                mutable.sound = nil
+                mutable.interruptionLevel = .passive
+                mutable.relevanceScore = 0
+            }
             if let u = c.url { info["url"] = u }
             mutable.userInfo = info
         }

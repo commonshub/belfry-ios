@@ -53,3 +53,44 @@ final class PushTests: XCTestCase {
         XCTAssertEqual(s.level("x"), "default")
     }
 }
+
+// vectors/push.json: the server's payloads (made with nostr-tools), shared with Android.
+final class PushVectorTests: XCTestCase {
+    func testVectors() throws {
+        let v = try vector("push")
+        let key = try XCTUnwrap(Data(base64Encoded: v.str("key")!))
+        let wrong = try XCTUnwrap(Data(base64Encoded: v.str("wrong_key")!))
+        let signedIn = v.str("signed_in")!
+        for c in v.list("cases") {
+            let name = c.str("name")!
+            let got = Push.open(c.str("payload")!, key: key)
+            guard let e = c["expect"] as? [String: Any] else { XCTAssertNil(got, name); continue }
+            let p = try XCTUnwrap(got, name)
+            XCTAssertNil(Push.open(c.str("payload")!, key: wrong), name)
+            XCTAssertEqual(p.category, e.str("channel"), name)
+            XCTAssertEqual(p.title, e.str("title"), name)
+            XCTAssertEqual(p.body, e.str("body"), name)
+            let o = e.dict("open")
+            switch p.route(signedIn: signedIn) {
+            case .channel(let id, let m):
+                XCTAssertEqual(o.str("kind"), "channel", name)
+                XCTAssertEqual(id, o.str("channel"), name)
+                XCTAssertEqual(m, o.str("message"), name)
+            case .thread(let id, _):
+                XCTAssertEqual(o.str("kind"), "channel", name)
+                XCTAssertEqual(id, o.str("channel"), name)
+            case .messages: XCTAssertEqual(o.str("kind"), "dms", name)
+            case .home: XCTAssertEqual(o.str("kind"), "home", name)
+            }
+        }
+    }
+
+    func testThreadLinkAndOwnEcho() {
+        let root = String(repeating: "a", count: 64)
+        XCTAssertEqual(Push.route("https://chat.belfry.sh/#/c/general/thread/\(root)", domain: "belfry.sh"), .thread("general", root: root))
+        XCTAssertTrue(Push.isOwnEcho(type: "dm", lastSent: 1000, now: 1020))
+        XCTAssertFalse(Push.isOwnEcho(type: "dm", lastSent: 1000, now: 1031))
+        XCTAssertFalse(Push.isOwnEcho(type: "mention", lastSent: 1000, now: 1001))
+        XCTAssertFalse(Push.isOwnEcho(type: "dm", lastSent: 0, now: 10))
+    }
+}

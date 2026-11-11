@@ -21,11 +21,30 @@ public struct PushContent: Hashable, Sendable {
 
     /// The notification's thread: `dm` for direct messages, else the channel (push.md `collapse`).
     public var threadId: String { type == "dm" ? "dm" : (channel ?? "belfry") }
+
+    /// Which setting it falls under (vectors/push.json `channel`): dms, mentions (mentions and
+    /// replies), announcements, pins, messages.
+    public var category: String {
+        switch type {
+        case "dm": return "dms"
+        case "mention", "reply": return "mentions"
+        case "announcement": return "announcements"
+        case "pin": return "pins"
+        default: return "messages"
+        }
+    }
+
+    /// What a tap opens for someone signed in to SIGNEDIN: only this belfry's own addresses.
+    public func route(signedIn: String) -> PushRoute {
+        domain.lowercased() == signedIn.lowercased() ? Push.route(url, domain: signedIn) : .home
+    }
 }
 
 /// Where a tap on a notification leads.
 public enum PushRoute: Hashable, Sendable {
     case channel(String, message: String?)
+    /// A thread reply: the channel with the thread of ROOT open.
+    case thread(String, root: String)
     case messages
     case home
 }
@@ -54,8 +73,27 @@ public enum Push {
         if parts.first == "dm" { return .messages }
         guard parts.count >= 2, parts[0] == "c", let id = parts[1].removingPercentEncoding, !id.isEmpty else { return .home }
         if parts.count >= 4, parts[2] == "m", isHex64(parts[3]) { return .channel(id, message: parts[3]) }
+        if parts.count >= 4, parts[2] == "thread", isHex64(parts[3]) { return .thread(id, root: parts[3]) }
         return .channel(id, message: nil)
     }
+
+    /// Stay quiet for a "dm" notification that comes within 30 s of this phone sending a direct
+    /// message or an e-mail: NIP-17 self-copies look like any other DM to the belfry (push.md §4).
+    public static let quietAfterSend = 30
+
+    public static func isOwnEcho(type: String, lastSent: Int, now: Int) -> Bool {
+        type == "dm" && lastSent > 0 && now - lastSent >= 0 && now - lastSent <= quietAfterSend
+    }
+
+    /// App Group defaults shared by the app and its extension (when the group is available).
+    public static let appGroup = "group.sh.belfry.app"
+    public static let lastSentKey = "belfry-last-dm-sent"
+
+    public static var shared: UserDefaults { UserDefaults(suiteName: appGroup) ?? .standard }
+
+    /// The app sent a DM or an e-mail now.
+    public static func markSent(now: Int = .now) { shared.set(now, forKey: lastSentKey) }
+    public static var lastSent: Int { shared.integer(forKey: lastSentKey) }
 
     /// The body of `POST /api/v1/push/devices` that registers this device.
     public static func addBody(token: Data, sandbox: Bool, key: Data, name: String) -> [String: Any] {

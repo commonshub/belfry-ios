@@ -17,7 +17,7 @@ edit one side). SPEC.md differs from Android's only in the paragraph that opens 
 - `vectors/*.json`: shared test cases. Generated from the web chat's own code:
   `VILLAGE=~/agents/belfry/work/village-app node tools/vectors/build.mjs` (needs the village-app
   checkout with node_modules; `tools/vectors/gen.ts` defines the cases, `stubs/` replace its
-  IndexedDB/relay modules). `channel-refs.json` comes from `tools/vectors/channel-refs.mjs`
+  IndexedDB/relay modules). `channel-refs.json` and `push.json` come from `tools/vectors/channel-refs.mjs` / `push.mjs`
   (Android's; the web's nostr-tools). `nip44.json` is the official NIP-44 file (sha256 269ed0f6…5040).
 - `Package.swift` → `Sources/BelfryCore`: everything that is not UI.
   - `Crypto/`: hex, HMAC/HKDF, ChaCha20, NIP-44 v2, BIP-340 + ECDH via swift-secp256k1 (P256K,

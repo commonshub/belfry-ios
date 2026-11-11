@@ -5,9 +5,8 @@ This repo does not touch the servers; each item says exactly what to change.
 
 ## 1. Accept the app's redirect URI in `/connect` — DONE (Belfry after 36ff214, 2026-11-09)
 
-`apps.NATIVE_APPS = {"sh.belfry.app://connect": "Belfry for iPhone"}`, approved by default. The
-Android app uses the same redirect, so its sessions are also named "Belfry for iPhone" (see the
-Android repo's SERVER-NEEDS 2: a neutral name or one chosen from `client_id` would fix it).
+`apps.NATIVE_APPS = {"sh.belfry.app://connect": …}`, approved by default; sessions are named by
+`client_id` ("Belfry for iPhone" / "Belfry for Android").
 Kept below for the record.
 
 The app signs in with `ASWebAuthenticationSession` and the return address
@@ -70,8 +69,10 @@ developer portal before TestFlight can carry push:
    group (project.yml). CI's simulator build is unsigned, so these only matter for TestFlight.
 
 Questions on the contract, raised here rather than changed:
-- `env` for a TestFlight build is `production` (TestFlight uses the production APNs); Debug
-  builds from Xcode use `sandbox`. The app sends that; the gateway must pick the APNs host by it.
+- (Settled, built) `env` picks the APNs host: Debug builds send `sandbox`, TestFlight / release
+  `production`. The gateway answers 503 `not_configured` until the APNs key exists.
+- A background own-echo DM (NIP-17 self-copy) can only be made silent, not dropped, without
+  Apple's `com.apple.developer.usernotifications.filtering` entitlement (granted on request).
 - The DM payload has `title` = the belfry's name: fine for one community per phone; with
   several communities later, the extension shows it as is.
 - No badge count is in the payload; the app sets none.

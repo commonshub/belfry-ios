@@ -78,6 +78,8 @@ struct ChannelView: View {
             .refreshable { await model.refresh() }
             .onAppear {
                 model.markSeen(id)
+                model.visibleChannel = id
+                takeThread()
                 if let focus { jump(to: focus, proxy) }
                 applyLaunch()
                 if pendingThreadLaunch { openBusiestThread(proxy) }
@@ -87,6 +89,8 @@ struct ChannelView: View {
                 if pendingThreadLaunch { openBusiestThread(proxy) }
             }
             .onChange(of: scrollTarget) { _, t in if let t { jump(to: t, proxy); scrollTarget = nil } }
+            .onChange(of: model.openThread) { _, _ in takeThread() }
+            .onDisappear { if model.visibleChannel == id { model.visibleChannel = nil } }
             .safeAreaInset(edge: .top, spacing: 0) {
                 VStack(spacing: 0) {
                     ChannelLineBar(id: id, topic: topic, open: { pullDown = true }, showAll: { withAnimation { topic = nil } },
@@ -171,6 +175,12 @@ struct ChannelView: View {
             }
             return .systemAction
         })
+    }
+
+    func takeThread() {
+        guard let t = model.openThread, t.group == id else { return }
+        model.openThread = nil
+        thread = t
     }
 
     func jump(to mid: String, _ proxy: ScrollViewProxy) {

@@ -1,0 +1,120 @@
+{
+  "about": "Push payloads (collective-belfry docs/push.md §4): NIP-44 v2 with the device key K (base64 of 32 bytes) used directly as the conversation key, no ECDH. data.b of the FCM message = payload. Signed in to signed_in; expect = the Android notification: its channel (dms | mentions | announcements | pins | messages), title, body, and what a tap opens (the channel at the message when url's host is chat.<signed-in domain> and domain matches, the conversation list for a dm, else home). null = not shown.",
+  "generated_by": "tools/vectors/push.mjs with nostr-tools 2.10.4 (the web chat's)",
+  "key": "g9BFG5rz6F0mdwJsgFj9Zx9AJQkDezYyGikPgZY0uJE=",
+  "signed_in": "belfry.sh",
+  "cases": [
+    {
+      "name": "mention",
+      "payload": "Aqj1EyzGTVtITgK72SeCBK0iPq0noC1aG7xTgBMX6U112VAKM0HUukM5MZs1p3iG0vaULeuQ33JOcmTGxldxnN8l7EXINMHK8OASvKdnTLl6dioVKg4zn8F3dGmP2VqpDPY5xWvw5Xto8DN50+A/OyIzDEWoxLUdilt789p2YrpyU/RvcSjQ9ALdN0y2tbkb9tnzRQMWXkwlS98G5371CplEza+YRbjqrYtIyvAS/EpXt8on4lJwE/idYtL2bRZLFpZWt7kcUsuJDGXu/APJcmgpeC0fq/2nH4m+GOq20PQlXfzzEP5Tl9V53tFObIiE9kT53AeuNdpO114NZKvMF3fWMpR1bLE9iS0AtAVj45QWfUYj9DlBoqPE52qKqoCs99cU9dewg0DamhbtJ6s/XEurF3WwctM6x2IHSiqXiipboNklouvAYCLnGgFrA5nfymoIBHMAQwca5DJ+SGkVcMUTHz5dMIKqiYlgMPvaRQvu863rzouxtxAqXJ5XKe885tAmvYcLYwSF/HhEy+llgscFs7Ojifigm0BUTMcNk9k2rukmV3uVHNXscwZukUTqFjvsmIQn1LGehZhn7kMs907fjg==",
+      "expect": {
+        "channel": "mentions",
+        "title": "#general",
+        "body": "Ada: are you coming tonight?",
+        "open": {
+          "kind": "channel",
+          "channel": "general",
+          "message": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "reply",
+      "payload": "Ap4/FWMk1C8OpLb0/OgdVvvWSiFDo/3WChMNnJDltNaIn83Ix2p19r1UnHrRLGaIElxbXl79xuU2Jm6fN6bl7qf8cdrXLBRpZ3n8Fl4SRJ1DBMcfZ8x3voYegO9csZI5fUk9gJi9nGNVqW/hxbyBC60mEyZue5yLqiDyq0faleHkTBJe/oCKlgEVJLihLfJMHfSwJfHO6z4YPwEcr5dwfrxJ7xTwbSHcLrTJyvXbeql4dvO+9tfoc/TgiC+vB6C32J0W+mw32aFGMv6ifGgkkfVtrL/GRcN+i0Ls2qPQahHboWlw8zatBV0nOENp9k/CMNLPdqU05TOxk92uyq38h+wWVEWf4sXmiJHUPhDFSyEvhAbm75EHg2MWQBjkuxdEZWffslXPNxZm3FxPMRhup7tdaBT1qMkjmCFkGtW6g28CxdsuNabcaPhD1JKxX1VNNgy21dfhwZUJM2gvJmLM0QcXaFAcN2NJynpI7BXkF21pU7M6+V6DIoNiDCd6OzC8yzeXTaBqUg9POqTgr7iy/taD5ieWEwVSsvqLrM8TOs+wZyrSGG91P5iczWoGNOPhBA1XXNNBkmrem+VJ8alVF83Bpw==",
+      "expect": {
+        "channel": "mentions",
+        "title": "#garden",
+        "body": "Tomás: yes, at 10",
+        "open": {
+          "kind": "channel",
+          "channel": "garden-3f9a",
+          "message": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "dm",
+      "payload": "AnR0weftkpr1gP5m5GCwYDlg3v7gyDmfPECioWYLfW8JRpKKaFiWx/BwU8ir3VJaPPoY3k1WUl4mYOYTJr5fNDU838r79lF4cLqBuBR+oIl1M5Q+vFUVtLF7ijCqVYXDyMMKK1N/EvUCAPLbnjjsR7XGnYOhcPB4kICgfWGQmU+2LxLAokaKmHHUL2j7z8xxA/XTwEQtrT378uo3K8rHA6zALDnzTG6Ii+ejyXnEB/7kq9uGEJQqZMyMxfSRneiZyC/z",
+      "expect": {
+        "channel": "dms",
+        "title": "Belfry",
+        "body": "New message",
+        "open": {
+          "kind": "dms"
+        }
+      }
+    },
+    {
+      "name": "announcement",
+      "payload": "AvO6nkCOBvz8I0DghtHxKLzOcGUdCvZj1/vJY42u/4cSGxFr/pftvSWpUdPCI7SeJNPiGuiKB57cAz769hUWunZXw1uLoZHE9rfIArBe8xlRBkFB9I5y8U6Ju18+fEj+IFgxbkvNZ4I7aoMiXKGzsb1dIuY1fOIhpvShLvyHbkwVQIJyCgJHgQBDXf6S+7pqlpRt4DdCAXBa/Gz5XWkmjKAkV38s7Aa7Tq89Y3VzlJdu3mRz2u2y7HUosTpAI/LCs8nMugh4W8V8AYSzcORQdEPkbvvCLRVt5jTvNmBCU8eaRy0F6JDJJRla2OtH4pWpqoNOwaNAZMzicfsStwsOKTdDE/igejkvhMF9vqRaF8jpDz1blOCOkR3Fw8XTrWMxKyKNZ1KeHZZCQU7X1HuRiZyCOEfUldtr0nPibApxyrDWBf//o9tfTLlUHlG8V71Sw41MWpsSslBG6n8YhLgNVDivYML73aE8QnpEpEmdXSwjcyrjJg4nKbvQf+/JNaUB0ScKrdxX3QBqst9yq4K+GL+PAvnP2me0fa4shTK3z5zFfsYWE+uQClUMWzWTABrILwqdhy5noBOIpJrBByPdeWor0Xa+KQgLgqBAroNZgQIf8EJpENJm851ny4OfR50qm9B/WHo2/mG/3s9STVOAzAXYCw5Y93wb/PcgZpflgtr/vNQ=",
+      "expect": {
+        "channel": "announcements",
+        "title": "📣 #general",
+        "body": "Maya: the gate code changes on Monday",
+        "open": {
+          "kind": "channel",
+          "channel": "general",
+          "message": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "pin",
+      "payload": "AnmfKj9gTYCRb1dA/bH8pIEeUjsMQ5AhU1t1xM8zdbwrfEg0KJAi9V5O3Vn6KPdi6DLFbk47TTTAdrYwZtUDpKGsBTura2KL2Y1U7Zpq0qVp7yfzZWfWM3h+O1gezc4SVgwF/1G7qJlxX1P+Dq8ZIanrAxl0jGEaDfzygxgJSMFGQ/zXLoPAD+fsn1rkQ8sGucCUHtgwSQHgp/LYHVZiuyUAlHsygniBnr+g0fgNxxczb76fRr5UFxbqxrp+omnvVzT8ZJ1e+SQcTLwWoJGb2inwQo61MxCGH46m6vz1F2j4jqjJ3odTfRJ897dUpxJnzsnowbU4q4EVfBjw5ygav2MBgMuRd9trJVfTXyJ0j8jvFBPIiy0UWOJ1gVMTyeulKk/mvX4IppnP6emD5E+MkYec5eKvU9ilAYLpxDNeggFNXllD0ZL3hHofqXGyC5NP6PXFCF7MmNOiMvNKQuh6QwtwJE9gnHLwQjLDtB3PW0Jb4ZNaSDs6ICiD27fnZd8nBsscUmAts4BSu2b25/ZEAgs6My0kr4rFCRuZbzUKUIyMG3R/ef2hrEVkVOtfDv2Laua9ZJu73uJ0MQ9CCDLjNGZKjg==",
+      "expect": {
+        "channel": "pins",
+        "title": "📌 #garden",
+        "body": "Joris: watering rota",
+        "open": {
+          "kind": "channel",
+          "channel": "garden-3f9a",
+          "message": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "message",
+      "payload": "ArYp7WbH9FVK+WKieinbaZQ1sXj41Uj/vwcZ0QO18A3kM0ezM8PVjiZvyskwtxJpt8qxT7QIna16gxQtvcbem6LLuPcnYawV8kMp74zOdwQp4HJKo50vpss1R1liwkbtQDRyxoaH9DuinRsSQNPSwDtC1mZ5nsqYmIQnVtIY0EySVakPGWuDy6QSO9LQKkALgdks/yvPWvbPkXG4iYdym/WAMucVLvI3qsr5dgayZU89CBHgNM13hky1gRBGvf5sGJISsMBfOmLhX9FfzADjJjGUJFoTbH8jrp3Yl7pAXBcD0l4EZ9M8sCyFyWpc2M/LlAGRyTGUadCn90ZYd8rgz2vF4XCXML9C4qHUyXJSMX1hr/h8ctPMhzasZSSBIe72TJe7MpivcEpTbiAAsStUYHsKjMibw0HEWn9hGQ11+K5s5tXucOcxOUL3WV4/dlj3cA/z7YdLHvew9efYAiojdjV/1FHbQP+Vsx9LYjKc2t6yfQIK4a6XjTUD8bOa3XgG1M2LQmlsJ+/14afek0uWG99hZByswJHcgeauCZ03akL5EIuJGoRCxZzgJKrzyT7CCYzjABYyryklj6F9gr4wE4lQ7A==",
+      "expect": {
+        "channel": "messages",
+        "title": "#random",
+        "body": "Sam: pears, anyone?",
+        "open": {
+          "kind": "channel",
+          "channel": "random",
+          "message": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "url on another host: home",
+      "payload": "AirEVKwa9ASqMQMG4CbM40WmTnv0G7oQKoPO0yhFBzsBzRyY7HVWutxzNSGHdF/9kF3iiUZjUtVk64fBBYYrD7duDcUEINc7TLPz/5yURVr4dsbEqAxg12p3fIiV4X41go2ZQTBdD6byZg+BbabkGyKebpEEvhhg8TnJGw8fWpN6KCoJ5XkR9uGcm4zdcGH2Vt1nNPvTosO3yJHyQSvrF+etTiYMuiI2wgdMjgo9ULqzlYTu3qzmP75AbpPijfUBwUX5Ch9SeSugo0B1uWr6UOcjXiGJgvo2L0DPI8Kb2904EM9dbvYOOMRH1dlugIJwejxLmtHMZwjjZZ49wjKJ/cGIDlFmZTIfsa3whiB4XSzRbL8V/VuoMOgFfj2KJy/zVT6Cjm+5sTeqYsm2JWXyiuKTfv1JlsmGmOGQ4fWrbPLupnRA7D/mddMAWYolyRCotkQq2GBeT6es4FMuyY6DdPO1tpRTM5E0frDQ74qgMnAL3mY+cF8o8NeRjRO+9+5oR523",
+      "expect": {
+        "channel": "mentions",
+        "title": "#general",
+        "body": "x",
+        "open": {
+          "kind": "home"
+        }
+      }
+    },
+    {
+      "name": "another belfry: home",
+      "payload": "Am1gBWQ9J5JHD9hjnbDnp2mE1S/merDYrhUgV5T7SGXw/HA00R1C2KxU0J7PsB4YsMZI9gd9vh33NGVb2XQjyc9Z1LoYX5udZGNDP8nRAmk1yoHHk+1QI5ref5nTdTprQ8EES0zO+JC/S0MTqkxnJAMLbfGjra2Q/AjtC6zWh70MT9vEKWk0XFRkOafXhsgOd30Uj7k+QOwiUIe7KhQz4Zzfa0hQuaO8eqZsqLShcU4PsgIXGLMZWXW8oGqOlIoN4duNT8JrnjARDCeFPO/yyOVNSHp0ysSBdR229/tg3D5p4wgfENjKsg0GqP1gbUBhqtEazvNoy1PxbCes9PBSeAiC9+2VcFy6HlzMqFZAXKcpzFcJNqCam29xHzLcSrfy6VptJ3U04v+mXRtxnfbF5sIJjd776m2AOTSnyipLD7BUB1T6UTVTXQlgFWryQyVQUW8CKVVaYfO8l1OQGzEnxFHKk61wfsiAUGP+VwXcV2tZ6WqMmsQff6noHXBHl1YC054V",
+      "expect": {
+        "channel": "mentions",
+        "title": "#general",
+        "body": "x",
+        "open": {
+          "kind": "home"
+        }
+      }
+    },
+    {
+      "name": "unknown version: dropped",
+      "payload": "ArSgUcvk1nLJxA+XbIwoQCbQOo9E/h/2SU58zCSTOrKWTrmTg72n1EUlVX17lsl7RPeejW1o2IYPgEJhRw8Cac3M3eRvCZJob58zSh2xosmqJFOOl+pzXdYyMMFRN5ZrP8fw2pypi3o+TnJtlcxEoGfFC+u3YMnpEaEVwm6MMsbYdUcdlz8fjN3jQ9CJmYC8bHiuUuIvKKmJ+oKt4yRH/yroCg==",
+      "expect": null
+    }
+  ],
+  "wrong_key": "L+XX+hzW5fyXwDv6PZRxN2kpDHTv13KsxN4njokm5WE="
+}

@@ -35,6 +35,11 @@ final class AppModel: ObservableObject {
     /// A tapped notification to open (a channel at a message, or Messages).
     @Published var pushOpen: PushOpen?
     var demoNotifications = NotificationSettings()
+    /// What is on screen (foreground notifications stay quiet for it).
+    var visibleConversation: String?
+    var visibleChannel: String?
+    /// A thread to open in its channel (a tapped thread-reply notification).
+    @Published var openThread: ThreadRoute?
     /// Events read through the belfry's API, by link (a minute).
     var remoteEvents = [String: (at: Date, event: ApiEvent)]()
     /// Text to put in a channel's composer (an event's URL after making it from the channel's ＋).
@@ -175,6 +180,7 @@ final class AppModel: ObservableObject {
         }
         e.onSent = { [weak d] item, _ in d?.outboxSent(item) }
         e.onFailed = { [weak d] item in d?.outboxFailed(item) }
+        d.onSend = { Push.markSent() }
         engine = e
         dms = d
         phase = .ready

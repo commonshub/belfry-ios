@@ -27,8 +27,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {}
 
+    /// In the foreground: nothing for this phone's own DM echo, for a DM while a conversation is
+    /// open, or for the channel on screen.
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        let info = notification.request.content.userInfo
+        let type = info["type"] as? String ?? ""
+        let channel = info["channel"] as? String
+        let quiet: Bool = await MainActor.run {
+            let m = AppDelegate.model
+            if Push.isOwnEcho(type: type, lastSent: Push.lastSent, now: .now) { return true }
+            if type == "dm" && m?.visibleConversation != nil { return true }
+            if let channel, channel == m?.visibleChannel { return true }
+            return false
+        }
+        return quiet ? [] : [.banner, .list, .sound]
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
@@ -106,6 +118,7 @@ extension AppModel {
         guard phase == .ready, (info["domain"] as? String) == config.domain else { return }
         switch Push.route(info["url"] as? String, domain: config.domain) {
         case .channel(let id, let message): pushOpen = PushOpen(channel: id, message: message)
+        case .thread(let id, let root): pushOpen = PushOpen(channel: id, message: nil, thread: root)
         case .messages: pushOpen = PushOpen(channel: nil, message: nil)
         case .home: break
         }
@@ -145,7 +158,7 @@ extension AppModel {
     }
 }
 
-struct PushOpen: Equatable { let channel: String?; let message: String? }
+struct PushOpen: Equatable { let channel: String?; let message: String?; var thread: String? = nil }
 
 /// "Get notified": shown once in a channel, until answered.
 struct PushOffer: View {

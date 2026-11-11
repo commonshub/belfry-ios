@@ -73,6 +73,7 @@ struct RootView: View {
             model.pushOpen = nil
             if let id = p.channel {
                 focus = p.message.map { SearchTarget(channel: id, message: $0) }
+                if let root = p.thread { model.openThread = ThreadRoute(group: id, root: root) }
                 if selection == .channel(id) { path = NavigationPath() } else { selection = .channel(id) }
             } else {
                 selection = .messages

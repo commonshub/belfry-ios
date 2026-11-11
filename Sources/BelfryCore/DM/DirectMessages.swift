@@ -161,8 +161,12 @@ public final class DirectMessages: @unchecked Sendable {
         }
     }
 
+    /// Called when this device sends a DM or an e-mail (push: stay quiet for its own echo).
+    public var onSend: (() -> Void)?
+
     /// A NIP-17 message in a Nostr conversation.
     public func send(_ text: String, in conv: String) async throws {
+        onSend?()
         let to = MailThreads.peers(conv).filter { $0 != me }
         guard to.allSatisfy(isHex64) else { throw BelfryError.invalid("This is not a valid Nostr key.") }
         let rumor = GiftWrap.rumor(kind: 14, pubkey: me, tags: to.map { ["p", $0] }, content: text)
@@ -182,6 +186,7 @@ public final class DirectMessages: @unchecked Sendable {
     /// An e-mail through the belfry's bridge. Returns the thread it lands in.
     @discardableResult
     public func sendMail(_ text: String, in conv: String, subject: String? = nil, fromName: String) async throws -> String {
+        onSend?()
         guard let b = bridge else { throw BelfryError.invalid("This belfry does not send e-mail yet.") }
         guard let from = myAddress else { throw BelfryError.invalid("You have no address here yet (name@domain).") }
         let to = MailThreads.address(conv)
