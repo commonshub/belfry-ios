@@ -70,11 +70,12 @@ public enum Push {
     public static func route(_ url: String?, domain: String) -> PushRoute {
         guard let url, let u = URL(string: url), u.scheme == "https", u.host?.lowercased() == "chat." + domain.lowercased() else { return .home }
         let parts = (u.fragment ?? "").split(separator: "/").map(String.init)
-        if parts.first == "dm" { return .messages }
-        guard parts.count >= 2, parts[0] == "c", let id = parts[1].removingPercentEncoding, !id.isEmpty else { return .home }
-        if parts.count >= 4, parts[2] == "m", isHex64(parts[3]) { return .channel(id, message: parts[3]) }
-        if parts.count >= 4, parts[2] == "thread", isHex64(parts[3]) { return .thread(id, root: parts[3]) }
-        return .channel(id, message: nil)
+        if parts == ["dm"] { return .messages }
+        guard parts.count == 2 || parts.count == 4, parts[0] == "c", let id = parts[1].removingPercentEncoding, channelIdRx.test(id) else { return .home }
+        if parts.count == 2 { return .channel(id, message: nil) }
+        if parts[2] == "m", isHex64(parts[3]) { return .channel(id, message: parts[3]) }
+        if parts[2] == "thread", isHex64(parts[3]) { return .thread(id, root: parts[3]) }
+        return .home
     }
 
     /// Stay quiet for a "dm" notification that comes within 30 s of this phone sending a direct
@@ -84,6 +85,16 @@ public enum Push {
     public static func isOwnEcho(type: String, lastSent: Int, now: Int) -> Bool {
         type == "dm" && lastSent > 0 && now - lastSent >= 0 && now - lastSent <= quietAfterSend
     }
+
+    /// vectors/push.json `quiet`: a dm within 30 s of sending one, or while Messages / a
+    /// conversation is open in the foreground (times in milliseconds).
+    public static func quiet(type: String, nowMs: Int, lastSentMs: Int, dmsOpen: Bool) -> Bool {
+        guard type == "dm" else { return false }
+        return dmsOpen || (lastSentMs > 0 && nowMs - lastSentMs >= 0 && nowMs - lastSentMs <= quietAfterSend * 1000)
+    }
+
+    /// A channel id in a tapped address.
+    static let channelIdRx = Rx("^[A-Za-z0-9_.-]{1,64}$")
 
     /// App Group defaults shared by the app and its extension (when the group is available).
     public static let appGroup = "group.sh.belfry.app"

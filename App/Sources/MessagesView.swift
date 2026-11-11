@@ -32,7 +32,9 @@ struct MessagesView: View {
             }
         }
         .sheet(isPresented: $newOne) { NewConversation() }
+        .onDisappear { model.messagesOpen = false }
         .onAppear {
+            model.messagesOpen = true
             guard !didLaunch else { return }
             didLaunch = true
             if model.launch.screen == "conversation" || model.launch.screen == "mail" {

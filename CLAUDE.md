@@ -8,7 +8,8 @@ don't guess. The Android app (opencollective/belfry-android) is a second reading
 [PARITY.md](PARITY.md). What the server must add: [SERVER-NEEDS.md](SERVER-NEEDS.md).
 
 `vectors/` is the contract shared with Android: keep both repos' files identical (copy, don't
-edit one side). SPEC.md differs from Android's only in the paragraph that opens section 19.
+edit one side). SPEC.md differs from Android's only in the paragraph that opens section 19 and the (iOS) note
+that ends 19.19.
 
 ## Layout
 

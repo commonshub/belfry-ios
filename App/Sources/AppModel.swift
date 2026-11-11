@@ -38,6 +38,7 @@ final class AppModel: ObservableObject {
     /// What is on screen (foreground notifications stay quiet for it).
     var visibleConversation: String?
     var visibleChannel: String?
+    var messagesOpen = false
     /// A thread to open in its channel (a tapped thread-reply notification).
     @Published var openThread: ThreadRoute?
     /// Events read through the belfry's API, by link (a minute).

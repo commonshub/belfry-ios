@@ -488,7 +488,8 @@ core implements it in `core/src/main/kotlin/sh/belfry/core/model/` (`World`, `Ac
 core in `Sources/BelfryCore/Model/` (`Derive` + its extensions `Events`, `Proposals`,
 `ChannelLine`, `ChannelRefs`, `Access`, `People`, `Actions2`), since 2026-11-11. `vectors/` is
 kept identical in both repositories (opencollective/belfry-ios and opencollective/belfry-android)
-and this file differs only in this paragraph: change both in both.
+and this file differs only in this paragraph and the (iOS) note that ends 19.19: change both in
+both.
 
 `KINDS_GROUPS` (section 4) now also has **1010** (edits).
 
@@ -932,51 +933,60 @@ New events are **Belfry events**; the older `ws-` ones above are still read and 
   declined / can't go (includes hosting); Your events (drawer) = Belfry events I host or hold /
   ask a place at, ending at most 30 days ago.
 
+### 19.19 Push notifications (collective-belfry `docs/push.md`, 2026-11-11)
 
-### 19.19 Push notifications (collective-belfry `docs/push.md`, built 2026-11-11)
-
-The contract is `docs/push.md` in collective-belfry (the belfry, the gateway at
-`https://push.belfry.sh` and both apps); this section says what a client does. Vectors:
-`vectors/push.json` (the server's payloads, made with nostr-tools).
+The contract is `docs/push.md` in collective-belfry (server, gateway and both apps build against
+it; the server is built, its *(built)* notes are folded in here); this section only says what a
+client does. The same section is in the iPhone app's SPEC (19.19). Vectors: `vectors/push.json`
+(made with the web's nostr-tools by `tools/vectors/push.mjs`; the server's payloads decrypt with
+them).
 
 - **Device key.** The device makes a random 32-byte key `K` per belfry and keeps it where its
-  notification code can read it (iOS: a keychain group shared with the Notification Service
-  Extension; Android: the app's encrypted storage). `K` is the NIP-44 v2 conversation key itself
-  (no ECDH).
-- **Register** on every start once the person allowed notifications (never ask at launch; ask
-  where it explains itself: a "Get notified" row the first time a channel opens, or Me →
-  Notifications): `POST <api>/push/devices` (NIP-98)
-  `{"add":{"platform":"apns"|"fcm","token","env":"production"|"sandbox","key":<base64 K>,
-  "app":"belfry-ios"|"belfry-android","name":<device model>}}` → `{"id"}`. `env` picks the APNs
-  host (Xcode debug builds: `sandbox`; TestFlight and the App Store: `production`; FCM:
-  `production`). **Sign-out**: `{"remove":<token>}` before the session is revoked; forget `K`.
-- **Payload.** APNs: `aps.alert` is a placeholder ("New notification"), `mutable-content: 1`,
-  `aps.thread-id` = collapse, custom key `b`. FCM: data-only, `data.b`. `b` = base64 NIP-44 v2
-  ciphertext of `{"v":1,"domain","type","title","body","channel"?,"event"?,"from"?,"url"}`:
-  - `type` ∈ dm, mention, reply, announcement, pin, message; its setting: dm → `dms`, mention and
-    reply → `mentions` (the switch covers both), announcement → `announcements`, pin → `pins`,
-    message → a channel at level `all`.
-  - `title`: the channel's label as the e-mails write it (`#name`, or a pod's / event's own name),
-    "📣 #channel" for an announcement, "📌 #channel" for a pin, the belfry's name for a dm.
-    `body` ≤ 180: "<author>: <text>" ("📷 Photo" or "…" for a message without text); "New
-    message" for a dm (the belfry can't read gift wraps: no `from`, `channel`, `event`).
-  - pin: `event` and `from` are the pinned message's.
-  - `url`: `https://chat.<domain>/#/c/<group>/m/<event>`; a thread reply's opens its thread,
-    `…/#/c/<group>/thread/<root id>` (`event` is the reply's own id); a dm's is `…/#/dm`.
-  - A payload whose `v` is not 1 or that does not open with `K` is not shown (the placeholder
-    stays on iOS, nothing on Android).
-- **Tap.** Only when `domain` is the signed-in belfry and `url`'s host is `chat.<that domain>`:
-  `#/c/<id>/m/<event>` opens the channel at the message, `#/c/<id>/thread/<root>` the thread,
-  `#/c/<id>` the channel, `#/dm` the conversation list; anything else opens the app's home.
-  `url` is never shown.
-- **Own echo.** NIP-17 senders gift-wrap a copy to themselves, which the belfry cannot tell
-  apart: a client stays quiet for a `dm` notification that arrives within 30 s of this device
-  sending a DM or an e-mail, and shows none for a `dm` while a conversation is open in the
-  foreground, nor for the channel on screen. (iOS: the extension cannot drop a notification
-  without Apple's filtering entitlement, so a background echo is delivered silently, passive and
-  without sound; in the foreground it is not presented.)
+  notification code can read it (iOS: the keychain group shared with the Notification Service
+  Extension; Android: the Keystore-encrypted `Secrets`, read by the FCM service). `K` is used
+  directly as the NIP-44 v2 conversation key (no ECDH).
+- **Register** on every start once the person allowed notifications (never ask at launch: ask
+  where it explains itself, e.g. a "Get notified" row the first time a channel opens, or Me →
+  Notifications; Android: Me → Notifications or a push level picked in a channel's bell; the
+  Android 13+ `POST_NOTIFICATIONS` permission): `POST <api>/push/devices` (NIP-98)
+  `{"add":{"platform":"apns"|"fcm","token":<hex APNs token | FCM token>,"env":"production"|"sandbox",
+  "key":<base64 K>,"app":"belfry-ios"|"belfry-android","name":<device model>}}` → `{"id"}`. The
+  same token again replaces the old row (Android also registers on a new FCM token). The belfry
+  drops a device whose pass closed, on a gateway 410, or after 60 days without a call.
+  **Sign-out**: `{"remove":<token>}` before the session is revoked; forget `K`.
+- **Payload.** APNs: `aps.alert` is a placeholder, `mutable-content: 1`, `aps.thread-id` =
+  collapse, custom key `b` = base64 NIP-44 v2 ciphertext. FCM: data-only, `data.b`, high priority
+  when urgent (dm, mention, reply, announcement; not pin, message). Plaintext:
+  `{"v":1,"domain","type":"dm"|"mention"|"reply"|"announcement"|"pin"|"message","title","body",
+  "channel"?,"event"?,"from"?,"url"}`; a client shows `title` and `body` (≤ 180), groups by
+  `dm` / the channel, and ignores a payload whose `v` is not 1, whose `domain` is not the belfry
+  the key belongs to, or that does not open (the placeholder stays). As built:
+  - dm: `title` = the belfry's name, `body` = "New message", no `from` / `channel` / `event`
+    (the belfry can't read gift wraps); `url` = `https://chat.<domain>/#/dm`.
+  - pin: `title` = "📌 #channel", `body` = the pinned message's author and text; `event` and
+    `from` are the pinned message's. announcement: `title` = "📣 #channel".
+  - A thread reply's `url` is its thread, `#/c/<id>/thread/<root id>` (`event` = the reply's
+    own id). `title` = the channel's label (`#name`, or a pod's / event's own name). A message
+    without text says "📷 Photo" (or "…").
+- **Channels / grouping.** Android notification channels: dm → Direct messages; mention, reply →
+  Mentions and replies; announcement → Announcements; pin → Pinned; message (and an unknown type)
+  → All messages. One notification per conversation (`dm`, else the group id).
+- **Own copies.** NIP-17 senders also wrap a copy to themselves, which the belfry can't tell
+  apart: a "dm" arriving within 30 s of this phone sending a DM or e-mail is not shown, nor one
+  arriving while Messages or a conversation is on screen in the foreground.
+- **Tap.** Only when `url`'s host is `chat.<domain>` of the signed-in belfry (and `domain` is
+  that belfry): `#/c/<id>/m/<event>` opens the channel at the message, `#/c/<id>/thread/<root>`
+  that thread, `#/c/<id>` the channel, `#/dm` Messages; anything else opens the app's home. Ids
+  are checked (`[A-Za-z0-9_.-]{1,64}`, 64 hex). `url` is never shown.
 - **Settings.** `POST <api>/notifications` `{}` reads, `{"set":{…}}` merges: `dms`, `mentions`,
-  `announcements`, `pins` (default true) and `channels` = {group id: `all` | `default` |
-  `mentions` | `off`} (absent = `default`). Me → Notifications shows the switches, each of my
-  channels' level and the devices; a channel's bell shows its push level next to the e-mail
-  follow.
+  `announcements`, `pins` (booleans, default true; `mentions` covers replies too, `dms` covers
+  e-mail threads) and `channels` = {group id: `all` | `default` | `mentions` | `off`} (absent =
+  `default`). all = every message and thread reply plus what default notifies; default =
+  mentions of me, replies to me, announcements, pinned messages (each subject to its switch);
+  mentions = mentions and replies only; off = nothing. Me → Notifications shows the four switches
+  and each of my channels' level; a channel's bell shows its push level next to the e-mail follow.
+- A build without push (Android: no `google-services.json`) says so; the settings can still be
+  changed (they apply to the person's other devices).
+- (iOS) The Notification Service Extension cannot drop a notification without Apple's
+  notification-filtering entitlement, so an own copy that arrives in the background is delivered
+  silently (passive, no sound); in the foreground it is not presented.

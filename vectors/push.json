@@ -1,5 +1,5 @@
 {
-  "about": "Push payloads (collective-belfry docs/push.md §4): NIP-44 v2 with the device key K (base64 of 32 bytes) used directly as the conversation key, no ECDH. data.b of the FCM message = payload. Signed in to signed_in; expect = the Android notification: its channel (dms | mentions | announcements | pins | messages), title, body, and what a tap opens (the channel at the message when url's host is chat.<signed-in domain> and domain matches, the conversation list for a dm, else home). null = not shown.",
+  "about": "Push payloads (collective-belfry docs/push.md §4): NIP-44 v2 with the device key K (base64 of 32 bytes) used directly as the conversation key, no ECDH. data.b of the FCM message = payload. Signed in to signed_in; expect = the Android notification: its channel (dms | mentions | announcements | pins | messages), title, body, and what a tap opens: only when url's host is chat.<signed-in domain> and domain matches, #/c/<id>/m/<event> = the channel at the message, #/c/<id>/thread/<root> = the thread, #/c/<id> = the channel, #/dm = Messages; else home. null = not shown. quiet: a dm within 30 s of sending one (NIP-17 copy to self), or while Messages is open in the foreground.",
   "generated_by": "tools/vectors/push.mjs with nostr-tools 2.10.4 (the web chat's)",
   "key": "g9BFG5rz6F0mdwJsgFj9Zx9AJQkDezYyGikPgZY0uJE=",
   "signed_in": "belfry.sh",
@@ -87,8 +87,48 @@
       }
     },
     {
+      "name": "thread reply: its thread",
+      "payload": "AirEVKwa9ASqMQMG4CbM40WmTnv0G7oQKoPO0yhFBzsBzY6Y7HVWutxzNSGHdF/9kF3iiUZjUtVk64fBBYYrD7duDcUEINckTK3r79HWRQKzdsPV5lNgzi8xdYiJ5WB2wo3XDDZLSeXyF0KfJrDmMWqcYZFBolM5uH7FAUoYS983aigq4XUb47qElcvbfWX9Xd1uc6SUoMO8yIb2SGyiUOe+Ti0d/X1xwQRPjQk+U7mwloft3a/lPL1DbZDhjvYCwkb6CRxReiijoEMx8y7pRO1nAmWHkOggOhyGasGL1NdwE9FaZeAEO8lI2NwziIo8JWxLl5/AKQznYZo5xjaN+cWMClViYTYbtan0giR8WSjVaLsR+V+sNOwBejmOIyv3UTqGimu9tTOuZs2yIWH2juaXObQOht7Ix9uyiYHfHIHUiVsjhF6SW7FlNexXsD7b3msJ9wNxKMLChSFPpaH3HIHQ12RYSCttGvMebDKNJD2+i2IxgsIZ0BYFnN+STQqoa4FI62xF7YyfAYLdMi8Y+gX6v5JkpezLuyF5IZhXVU1GO/9GLEJ5p1roJSBnJvzLyYDQRoVxibIDlb39mMogzQnBlw5FVAHBFLkfOM2U3bl5cCaZcK/0Rov5JWX86KLWrjUzEjNAJRNeI64Ux/NPuKZXt6WtTvjhA3U0w4el+AITo98=",
+      "expect": {
+        "channel": "mentions",
+        "title": "#general",
+        "body": "Kofi: I can pick it up on Friday",
+        "open": {
+          "kind": "thread",
+          "channel": "general",
+          "root": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      }
+    },
+    {
+      "name": "a photo without text",
+      "payload": "Am1gBWQ9J5JHD9hjnbDnp2mE1S/merDYrhUgV5T7SGXw/Fo00R1C2KxU0J7PsB4YsMZI9gB2oQvsPypEnzN6yZcC0KZKAJvKI31VMNrdTys1ksrHlvwefJrHOtvGdDFgE4xKCw+I493hECtG+l02MgGYmgN645iUsUagTuWagacMTZeNZy54G11xafmQjYBYdCEQyPB5QP8iW5b8dVMz4Zzfa0hQuaO8eqZsqLShcU4PsgIXGLMZWXW8oGqOlIoN4duNT8JrnjARDCeFPKi7j/VaQT0rjcmQZAigqLEqnXoq8VQVE4mA+R4GpbJkeQ4j5NNUyPdnz0DxYWmguvRWfAyG8+mRdFi+GljIrFJEWKMtyFMNMqSen2t1GzbYTrP27V5pI3Ew5vvhFFxhiv+CuYUEnM/u/DLKczKqzjtHENU4YSaDf0Y7cipPdkWVIlc0NAEvGjNjANHBl1OQGzEnxFHKk1gbbX4fWqwMHPmLZrVa9KPr2T6gmksN5S7Nh+nm2x5Y",
+      "expect": {
+        "channel": "messages",
+        "title": "#garden",
+        "body": "Joris: 📷 Photo",
+        "open": {
+          "kind": "channel",
+          "channel": "garden-3f9a",
+          "message": null
+        }
+      }
+    },
+    {
+      "name": "a fragment the app does not know: home",
+      "payload": "ArSgUcvk1nLJxA+XbIwoQCbQOo9E/h/2SU58zCSTOrKWTiaTg72n1EYlVX17lsl7RPeejW1o2IYPgEJhRw8Cac3M3eRvCZJob58zSh2xosmqJFOOl+pzXdZpdYgdMItuKsfm2ofkkgMcdFAVt+Bmww+kZYXSDOvTM8ZwrAv+U6r6WWUFAPqfSImUktpgM4rdXeqQnz/DhvKohv2iQ6ynqKJnfYakkGFr6fFzfdU27aL++wPsKhJ5ib3ZLcEGl+imMCzIqrFLIDJgOEHCfXlDKY17BMx9qfrHFUZ8LdGzX8YqJsJKBXMVL1jnQKhUeh8efvLdAnOeqQAad0V6OvE9aYBpth4Zl8HFQb/LYkhhn6KLsIMbXbvnqSlepA6aPfeC6PfY",
+      "expect": {
+        "channel": "mentions",
+        "title": "#general",
+        "body": "x",
+        "open": {
+          "kind": "home"
+        }
+      }
+    },
+    {
       "name": "url on another host: home",
-      "payload": "AirEVKwa9ASqMQMG4CbM40WmTnv0G7oQKoPO0yhFBzsBzRyY7HVWutxzNSGHdF/9kF3iiUZjUtVk64fBBYYrD7duDcUEINc7TLPz/5yURVr4dsbEqAxg12p3fIiV4X41go2ZQTBdD6byZg+BbabkGyKebpEEvhhg8TnJGw8fWpN6KCoJ5XkR9uGcm4zdcGH2Vt1nNPvTosO3yJHyQSvrF+etTiYMuiI2wgdMjgo9ULqzlYTu3qzmP75AbpPijfUBwUX5Ch9SeSugo0B1uWr6UOcjXiGJgvo2L0DPI8Kb2904EM9dbvYOOMRH1dlugIJwejxLmtHMZwjjZZ49wjKJ/cGIDlFmZTIfsa3whiB4XSzRbL8V/VuoMOgFfj2KJy/zVT6Cjm+5sTeqYsm2JWXyiuKTfv1JlsmGmOGQ4fWrbPLupnRA7D/mddMAWYolyRCotkQq2GBeT6es4FMuyY6DdPO1tpRTM5E0frDQ74qgMnAL3mY+cF8o8NeRjRO+9+5oR523",
+      "payload": "Ah70wWQYSJnYXrecKwT+8Q5r8jc1EXr6DJaB3oKSGcv8IlpOceJ36s0avwSLKG80PcW0UPxAOhK8fpym5K83gl3YQpPr9lq6WGQOUEjCYx6lZeuuDmsjBmbAhmIsx2pCAtkKx9DV/hnP6IFlsXI2uskZcVpL7sCR9l3d+EW1OcpCWBsJ1UQxMUznpYb5I5wBlM8bBQA8QHzPYM0rIHyXJ80rMyPikp2J5GRVQ1NomqCObxDgL78e5R00jHj8tcOMiTzLRbvdMMUVRTcXgPqvD0xKetgaCi3ahoHMXjmulYZ6FwYf0l0XAI7WZP8pK4/ZpLQldOxVDOCK6KxU5VySRt3++OphXw0IdULo79Lmf2H59GGxNCLly1UVRNG4vlZT53Ikw3msrufK7+nBMroI4gjoXILG5GLXQmNTtKHsJfLHucNAfmjZslSweFv3XbGJaInAOh5mwXMk3hUxwwpwUygm9EBoYnmqQsNnUQ1hSQMx8U/DocQAOh0ipWiTR0q0shXa",
       "expect": {
         "channel": "mentions",
         "title": "#general",
@@ -100,7 +140,7 @@
     },
     {
       "name": "another belfry: home",
-      "payload": "Am1gBWQ9J5JHD9hjnbDnp2mE1S/merDYrhUgV5T7SGXw/HA00R1C2KxU0J7PsB4YsMZI9gd9vh33NGVb2XQjyc9Z1LoYX5udZGNDP8nRAmk1yoHHk+1QI5ref5nTdTprQ8EES0zO+JC/S0MTqkxnJAMLbfGjra2Q/AjtC6zWh70MT9vEKWk0XFRkOafXhsgOd30Uj7k+QOwiUIe7KhQz4Zzfa0hQuaO8eqZsqLShcU4PsgIXGLMZWXW8oGqOlIoN4duNT8JrnjARDCeFPO/yyOVNSHp0ysSBdR229/tg3D5p4wgfENjKsg0GqP1gbUBhqtEazvNoy1PxbCes9PBSeAiC9+2VcFy6HlzMqFZAXKcpzFcJNqCam29xHzLcSrfy6VptJ3U04v+mXRtxnfbF5sIJjd776m2AOTSnyipLD7BUB1T6UTVTXQlgFWryQyVQUW8CKVVaYfO8l1OQGzEnxFHKk61wfsiAUGP+VwXcV2tZ6WqMmsQff6noHXBHl1YC054V",
+      "payload": "AlfwC/rRER90ylk5Awswgo35g8Jm/vK6QP7DJKULzsr5YuJKgnYN+BbEi96RcOizqjQYCWSCBrRDVHZyBirpn1DE+64XlKc6xt7/tx6y5bhYufnqJjRLutSqTPSCGwJI+UeMDWA9b9eCFOiLYemX2zejH9O98hXpUvU2VtC8kfoygKX32l/tnU5zRkdWrU3wPilZxCaBz6vySNaWwbR8oBNCQXfVy3cvbsNZVnIQQ/q9PQdJ3Z7fTOLgwSK7p5SxYUi1I0vNddVHGhbKOil5uqJP4YEPa+lsLpyHQiDN2X4qdlnPhy9+Vm6uDi7VKPNYJmaZZNtUfIxk7Kk3jhEGWVobhyxW8H0IsdTBedB/u3vZuKFw+VRIro9r5Qb5oHWDxbcba4d5SZ0LRi2102JWQSkoA9qAsUdzc9X8XTFiGfZTNV7raUWQRb4V+PUDY7rq+HAVlB0iGPNkXAfCqQF5u2VE0Cc8Irn8AtpFDef6XxUIm4TdGjKPb15RVj0i682+GAcg",
       "expect": {
         "channel": "mentions",
         "title": "#general",
@@ -112,9 +152,46 @@
     },
     {
       "name": "unknown version: dropped",
-      "payload": "ArSgUcvk1nLJxA+XbIwoQCbQOo9E/h/2SU58zCSTOrKWTrmTg72n1EUlVX17lsl7RPeejW1o2IYPgEJhRw8Cac3M3eRvCZJob58zSh2xosmqJFOOl+pzXdYyMMFRN5ZrP8fw2pypi3o+TnJtlcxEoGfFC+u3YMnpEaEVwm6MMsbYdUcdlz8fjN3jQ9CJmYC8bHiuUuIvKKmJ+oKt4yRH/yroCg==",
+      "payload": "AnTUUQBMrnIzAIsLhFXxApAWP5blXEKz6SJPqBuut1W7I7DSmo0SgimVMIKA1dAogKbtpHiXy0153lzS8uaptnYTMJtIPyg9TZY2DSjtGwX0dKfxuzQ5Af3QZ6+FlU+ruamroig0vDRMaWWzJDdlHZK0kcnQiXaFfYZyAmEu2C9r6vxdPKi+5BQzLBk8AiDJSlclrkzVzxD8J3eHwz1riezxnQ==",
       "expect": null
     }
   ],
-  "wrong_key": "L+XX+hzW5fyXwDv6PZRxN2kpDHTv13KsxN4njokm5WE="
+  "wrong_key": "L+XX+hzW5fyXwDv6PZRxN2kpDHTv13KsxN4njokm5WE=",
+  "quiet": [
+    {
+      "type": "dm",
+      "now_ms": 100000,
+      "last_dm_sent_ms": 80000,
+      "dms_open": false,
+      "quiet": true
+    },
+    {
+      "type": "dm",
+      "now_ms": 100000,
+      "last_dm_sent_ms": 60000,
+      "dms_open": false,
+      "quiet": false
+    },
+    {
+      "type": "dm",
+      "now_ms": 100000,
+      "last_dm_sent_ms": 0,
+      "dms_open": true,
+      "quiet": true
+    },
+    {
+      "type": "dm",
+      "now_ms": 100000,
+      "last_dm_sent_ms": 0,
+      "dms_open": false,
+      "quiet": false
+    },
+    {
+      "type": "mention",
+      "now_ms": 100000,
+      "last_dm_sent_ms": 99000,
+      "dms_open": true,
+      "quiet": false
+    }
+  ]
 }

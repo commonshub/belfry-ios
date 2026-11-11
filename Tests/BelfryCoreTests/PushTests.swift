@@ -76,12 +76,20 @@ final class PushVectorTests: XCTestCase {
                 XCTAssertEqual(o.str("kind"), "channel", name)
                 XCTAssertEqual(id, o.str("channel"), name)
                 XCTAssertEqual(m, o.str("message"), name)
-            case .thread(let id, _):
-                XCTAssertEqual(o.str("kind"), "channel", name)
+            case .thread(let id, let root):
+                XCTAssertEqual(o.str("kind"), "thread", name)
                 XCTAssertEqual(id, o.str("channel"), name)
+                XCTAssertEqual(root, o.str("root"), name)
             case .messages: XCTAssertEqual(o.str("kind"), "dms", name)
             case .home: XCTAssertEqual(o.str("kind"), "home", name)
             }
+        }
+    }
+
+    func testQuietVectors() throws {
+        for q in try vector("push").list("quiet") {
+            XCTAssertEqual(Push.quiet(type: q.str("type")!, nowMs: q.int("now_ms")!, lastSentMs: q.int("last_dm_sent_ms")!, dmsOpen: q["dms_open"] as? Bool ?? false),
+                           q["quiet"] as? Bool, "\(q)")
         }
     }
 

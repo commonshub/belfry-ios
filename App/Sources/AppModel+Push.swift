@@ -36,7 +36,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         let quiet: Bool = await MainActor.run {
             let m = AppDelegate.model
             if Push.isOwnEcho(type: type, lastSent: Push.lastSent, now: .now) { return true }
-            if type == "dm" && m?.visibleConversation != nil { return true }
+            if type == "dm" && (m?.visibleConversation != nil || m?.messagesOpen == true) { return true }
             if let channel, channel == m?.visibleChannel { return true }
             return false
         }
