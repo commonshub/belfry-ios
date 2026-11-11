@@ -17,6 +17,13 @@ public struct BelfryConfig: Codable, Hashable, Sendable {
     public var logout: String
     public var admins: [String]
     public var chatURL: String
+    /// belfry.json `agents`: a member's own agent → that member (64-hex keys). Optional so older
+    /// stored copies still decode.
+    public var agentsMap: [String: String]?
+    /// The ETag of the document this copy came from (revalidated with If-None-Match).
+    public var etag: String?
+
+    public var agents: [String: String] { agentsMap ?? [:] }
 
     public static func defaults(domain raw: String) -> BelfryConfig {
         let d = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -57,6 +64,11 @@ public struct BelfryConfig: Codable, Hashable, Sendable {
            let u = chat["url"] as? String, u.hasPrefix("https://") {
             c.chatURL = u.hasSuffix("/") ? u : u + "/"
         }
+        var agents = [String: String]()
+        for (k, v) in doc["agents"] as? [String: Any] ?? [:] {
+            if let m = v as? String, isHex64(k), isHex64(m) { agents[k] = m }
+        }
+        c.agentsMap = agents
         return c
     }
 
@@ -73,14 +85,27 @@ public enum Discovery {
     }
 
     public static func fetch(domain: String, session: URLSession = .shared) async throws -> BelfryConfig {
+        guard let fresh = try await revalidate(domain: domain, etag: nil, session: session) else { throw BelfryError.network("no belfry.json") }
+        return fresh
+    }
+
+    /// belfry.json is revalidated, never trusted from a cache (SPEC 19.15): `Cache-Control:
+    /// no-cache` and `If-None-Match` with the ETag of the copy held. nil = 304, the copy is current.
+    public static func revalidate(domain: String, etag: String?, session: URLSession = .shared) async throws -> BelfryConfig? {
         guard let url = URL(string: "https://\(domain)/.well-known/belfry.json") else { throw BelfryError.invalid("bad domain") }
         var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 15)
         req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        if let etag, !etag.isEmpty { req.setValue(etag, forHTTPHeaderField: "If-None-Match") }
         let (data, resp) = try await session.data(for: req)
-        guard (resp as? HTTPURLResponse)?.statusCode == 200, let doc = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+        let http = resp as? HTTPURLResponse
+        if http?.statusCode == 304 { return nil }
+        guard http?.statusCode == 200, let doc = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw BelfryError.network("no belfry.json")
         }
-        return .from(domain: domain, document: doc)
+        var c = BelfryConfig.from(domain: domain, document: doc)
+        c.etag = http?.value(forHTTPHeaderField: "ETag")
+        return c
     }
 
     /// NIP-05: the key behind NAME@DOMAIN, or nil.

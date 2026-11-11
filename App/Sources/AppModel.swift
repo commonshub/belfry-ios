@@ -30,6 +30,12 @@ final class AppModel: ObservableObject {
     private var cachedGroups: (Int, [BelfryCore.Group])?
     private var cachedProfiles: (Int, [String: Profile])?
     private var seenSentHere = [String: Int]()
+    /// `_groups@<domain>`: posts e-mail cards, answers sent as the channel, guest joins.
+    @Published var groupsKey: String?
+    /// What the register says people are (`POST /whois`), this session.
+    @Published var kinds = [String: String]()
+    private var whoisAsked = Set<String>()
+    private var configCheckedAt = Date.distantPast
     private var bump: DispatchWorkItem?
     let launch = LaunchOptions()
 
@@ -51,7 +57,11 @@ final class AppModel: ObservableObject {
 
     var derive: Derive {
         if let c = cachedDerive, c.0 == version { return c.1 }
-        let d = Derive(events: engine?.snapshot() ?? [], me: me, communityAdmins: Set(config.admins))
+        let pendingIds = Set((engine?.outboxItems() ?? []).filter { $0.signed == nil }.map(\.localId))
+        let ctx = WorldContext(me: me, domain: config.domain, communityName: config.name, communityAdmins: Set(config.admins),
+                               groupsKey: groupsKey, bridgeKey: dms?.bridge, groupsRelay: config.groupsRelay,
+                               agents: config.agents, kinds: kinds, pending: pendingIds)
+        let d = Derive(events: engine?.snapshot() ?? [], context: ctx)
         cachedDerive = (version, d)
         return d
     }
@@ -148,10 +158,14 @@ final class AppModel: ObservableObject {
         if !s.demo {
             Task {
                 if let bs = signer as? BunkerSigner, s.pubkey == nil, let pk = try? await bs.ensurePubkey() { db.set("pubkey", pk) }
-                if let fresh = try? await Discovery.fetch(domain: s.domain) {
-                    db.set("config", fresh)
-                    self.config = fresh
+                await self.revalidateConfig(force: true)
+                if let k = db.get("groups-key", as: String.self) { self.groupsKey = k }
+                if let k = await Discovery.nip05(name: "_groups", domain: s.domain) {
+                    db.set("groups-key", k)
+                    self.groupsKey = k
                 }
+                self.version += 1
+                await self.askWhois()
                 await d.loadBridge()
                 self.updateAddress()
                 await d.process()
@@ -160,6 +174,40 @@ final class AppModel: ObservableObject {
         e.start()
         updateAddress()
     }
+
+    /// belfry.json again (ETag, no-cache; SPEC 19.15): at start, after an admin / agent change, and
+    /// when a profile or members list opens (at most every 30 s unless FORCE).
+    func revalidateConfig(force: Bool = false) async {
+        guard let engine, !engine.localOnly else { return }
+        if !force && Date().timeIntervalSince(configCheckedAt) < 30 { return }
+        configCheckedAt = Date()
+        let current = config
+        do {
+            if let fresh = try await Discovery.revalidate(domain: current.domain, etag: current.etag) {
+                engine.db.set("config", fresh)
+                config = fresh
+                version += 1
+            }
+        } catch {}
+    }
+
+    /// Ask the register who the people brought in by links or as agents are (once per session per
+    /// key; KEYS again when a profile or members list opens).
+    func askWhois(_ keys: [String]? = nil) async {
+        guard let engine, !engine.localOnly else { return }
+        let list = (keys ?? derive.guestJoinKeys).filter { keys != nil || !whoisAsked.contains($0) }
+        guard !list.isEmpty else { return }
+        whoisAsked.formUnion(list)
+        if let got = try? await api.whois(list) {
+            var k = kinds
+            for p in list { k[p] = got[p] }
+            kinds = k
+            version += 1
+        }
+    }
+
+    /// The belfry's HTTP API, signed as me.
+    var api: BelfryAPI { BelfryAPI(config: config, signer: engine?.signer) }
 
     func updateAddress() {
         guard let dms else { return }
@@ -187,6 +235,9 @@ final class AppModel: ObservableObject {
         dms = nil
         session = nil
         cachedDerive = nil
+        groupsKey = nil
+        kinds = [:]
+        whoisAsked = []
         cachedGroups = nil
         cachedProfiles = nil
         phase = .signedOut
@@ -215,6 +266,7 @@ final class AppModel: ObservableObject {
         cfg.name = "Riverside Commons"
         cfg.admins = []
         open(s, config: cfg)
+        groupsKey = Demo.signer("groups").pubkey
         if let e = engine, let d = dms {
             Task { await Demo.seed(engine: e, dms: d) ; self.updateAddress() }
         }

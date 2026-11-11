@@ -8,8 +8,8 @@ import Network
 public enum AccessState: String, Sendable { case unknown, ok, denied }
 
 public final class SyncEngine: @unchecked Sendable {
-    public static let kindsGroups = [0, 39000, 39001, 39002, 9, 1111, 7, 9007, 9002, 9008, 9000, 9001, 9005, 9021, 9022, 1068, 1018, 5, 1985, 30078, 2100, 2101, 2102, 2103, 8534, 8535, 8536, 8538]
-    public static let kindsMain = [0, 31922, 31923, 31925, 30023, 5]
+    public static let kindsGroups = [0, 39000, 39001, 39002, 9, 1111, 1010, 7, 9007, 9002, 9008, 9000, 9001, 9005, 9021, 9022, 1068, 1018, 5, 1985, 30078, 2100, 2101, 2102, 2103, 31925, 8534, 8535, 8536, 8538]
+    public static let kindsMain = [0, 31922, 31923, 31925, 30023, 30402, 5]
     public static let clientTag: Tag = ["client", "belfry-ios"]
 
     public let config: BelfryConfig
@@ -98,6 +98,12 @@ public final class SyncEngine: @unchecked Sendable {
         changed()
         onNewEvents?(unseen)
         return unseen
+    }
+
+    /// The newest member profile extras (kind 30078, d = belfry:profile) held (SPEC 19.9).
+    func latestProfileExtras() -> Int {
+        lock.lock(); defer { lock.unlock() }
+        return events.values.filter { $0.kind == 30078 && $0.hasTag("d", Derive.profileD) }.map(\.createdAt).max() ?? 0
     }
 
     public func latest(_ kinds: [Int]) -> Int {
@@ -330,8 +336,10 @@ public final class SyncEngine: @unchecked Sendable {
         if t == .groups { return [["kinds": kinds, "since": since, "limit": 2000]] }
         let wraps = max(0, latest([1059]) - 3 * 86400)
         let old = max(0, latest([4]) - 3600)
+        let extras = max(0, latestProfileExtras() - 3600)
         return [
             ["kinds": kinds, "since": since, "limit": 2000],
+            ["kinds": [30078], "#d": [Derive.profileD], "since": extras, "limit": 2000],
             ["kinds": [1059], "#p": [me], "since": wraps, "limit": 1000],
             ["kinds": [4], "#p": [me], "since": old, "limit": 500],
             ["kinds": [4], "authors": [me], "since": old, "limit": 500],

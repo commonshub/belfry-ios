@@ -80,8 +80,17 @@ public enum Outbox {
 
     public static func classify(_ message: String) -> ErrorClass {
         if message.hasPrefix("duplicate:") { return .duplicate }
-        if permanentPrefix.test(message) || permanentWords.test(message) { return .failed }
+        if permanentPrefix.test(message) || permanentWords.test(message) || refusedUpload(message) { return .failed }
         return .retry
+    }
+
+    static let refusedUploadRx = Rx("^upload failed \\((4\\d\\d)")
+    static let uploadMayPass: Set<String> = ["401", "408", "429"]
+
+    /// A file the storage refuses (4xx but 401 / 408 / 429) fails its message for good (SPEC 19.17).
+    static func refusedUpload(_ message: String) -> Bool {
+        guard let code = refusedUploadRx.first(message)?[1] else { return false }
+        return !uploadMayPass.contains(code)
     }
 
     /// created_at strictly increasing per client.

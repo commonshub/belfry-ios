@@ -1,5 +1,5 @@
 {
-  "about": "The outbox: every write is saved first, then published in created_at order. Per relay (\"target\"), a transient error stops that relay's later items for this pass (order kept), other relays go on; a permanent error marks the item failed (shown with Retry) and does not block; \"duplicate:\" counts as sent. A pass runs on: enqueue, online, foreground, relay connected, and every 15 s while something is queued.",
+  "about": "The outbox: every write is saved first, then published in created_at order. Per relay (\"target\"), a transient error stops that relay's later items for this pass (order kept), other relays go on; a permanent error marks the item failed (shown with Retry) and does not block; \"duplicate:\" counts as sent. A pass runs on: enqueue, online, foreground, relay connected, and every 15 s while something is queued. An upload the file storage refuses with 4xx (\"upload failed (<status>…)\") other than 401, 408 or 429 is permanent: that message fails (web sync.ts, village-app 1834584; Android addition).",
   "generated_by": "tools/vectors/build.mjs from the web chat (village-app, branch belfry-chat)",
   "people": {
     "alice": {
@@ -107,6 +107,38 @@
     },
     {
       "message": "upload failed (413 too big)",
+      "result": "failed"
+    },
+    {
+      "message": "upload failed (415)",
+      "result": "failed"
+    },
+    {
+      "message": "upload failed (403)",
+      "result": "failed"
+    },
+    {
+      "message": "upload failed (401)",
+      "result": "retry"
+    },
+    {
+      "message": "upload failed (408)",
+      "result": "retry"
+    },
+    {
+      "message": "upload failed (429)",
+      "result": "retry"
+    },
+    {
+      "message": "upload failed (500)",
+      "result": "retry"
+    },
+    {
+      "message": "upload failed (timeout)",
+      "result": "retry"
+    },
+    {
+      "message": "upload failed (no url)",
       "result": "retry"
     }
   ],
