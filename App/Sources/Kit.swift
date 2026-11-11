@@ -98,7 +98,7 @@ struct PodShape: Shape {
         let cy = rect.midY + (n == 3 ? 1.5 * scale : 0)
         var p = Path()
         for i in 0..<n {
-            let a = -Double.pi / 2 + Double(i) * 2 * Double.pi / Double(n)
+            let a = CGFloat(-Double.pi / 2 + Double(i) * 2 * Double.pi / Double(n))
             let pt = CGPoint(x: cx + r * cos(a), y: cy + r * sin(a))
             if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
         }

@@ -293,6 +293,11 @@ public struct CardState: Hashable, Sendable {
     public var status: CardStatus = .open
     public var assignee: String?
     public var answered = 0
+    public init(status: CardStatus = .open, assignee: String? = nil, answered: Int = 0) {
+        self.status = status
+        self.assignee = assignee
+        self.answered = answered
+    }
 }
 
 public struct TaskComment: Hashable, Sendable { public let author: String; public let text: String; public let at: Int }

@@ -23,6 +23,10 @@ public struct GuestLink: Hashable, Sendable {
     public let linkDays: Int
     public let expiresAt: String?
     public let ownAgent: Bool
+    public init(url: String, agentURL: String?, days: Int, people: Int, linkDays: Int, expiresAt: String?, ownAgent: Bool) {
+        self.url = url; self.agentURL = agentURL; self.days = days; self.people = people
+        self.linkDays = linkDays; self.expiresAt = expiresAt; self.ownAgent = ownAgent
+    }
 }
 
 public struct ChannelGuest: Hashable, Sendable { public let added: Bool; public let already: Bool; public let member: Bool }
@@ -32,6 +36,7 @@ public struct MyAgent: Hashable, Sendable, Identifiable { public let pubkey: Str
 public struct MyAgents: Hashable, Sendable {
     public let agents: [MyAgent]
     public let limit: Int
+    public init(agents: [MyAgent], limit: Int) { self.agents = agents; self.limit = limit }
     public var room: Int { limit - agents.count }
 }
 
@@ -70,6 +75,10 @@ public struct SessionInfo: Hashable, Sendable, Identifiable {
     public let createdAt: String
     public let lastActivity: String?
     public var id: String { bunkerPubkey }
+    public init(applicationName: String, device: String?, redirectOrigin: String, bunkerPubkey: String, createdAt: String, lastActivity: String?) {
+        self.applicationName = applicationName; self.device = device; self.redirectOrigin = redirectOrigin
+        self.bunkerPubkey = bunkerPubkey; self.createdAt = createdAt; self.lastActivity = lastActivity
+    }
 }
 
 /// A guest link's token, from https://chat.<domain>/join/<token> (or …/#/join/<token>).
