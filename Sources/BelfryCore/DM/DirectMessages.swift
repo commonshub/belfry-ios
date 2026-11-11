@@ -227,6 +227,33 @@ public final class DirectMessages: @unchecked Sendable {
         return target
     }
 
+    /// Shared inbox: an answer by e-mail as the channel (mail-from = <channel>@domain), to the
+    /// sender of the inbox card CARDID (SPEC 19.6). Returns the e-mail's id (its delivery report).
+    @discardableResult
+    public func sendAsChannel(channel: String, channelName: String, to: String, subject: String, text: String, inReplyTo: String?, cardId: String, myName: String) async throws -> String {
+        guard let b = bridge else { throw BelfryError.invalid("This belfry does not send e-mail yet.") }
+        let from = channel + "@" + engine.config.domain
+        let (raw, _) = MIME.build(fromName: myName.isEmpty ? channelName : "\(myName) for \(channelName)", from: from, to: to, subject: subject, text: text,
+                                  inReplyTo: inReplyTo, references: inReplyTo, domain: engine.config.domain)
+        let emailId = UUID().uuidString.lowercased()
+        let rumor = GiftWrap.rumor(kind: 1301, pubkey: me, tags: [["email-id", emailId], ["mail-from", from], ["rcpt-to", to], ["subject", subject], ["e", cardId]], content: raw)
+        if engine.localOnly {
+            lock.lock(); reports[emailId] = DeliveryReport(status: "failed", details: "Demo mode sends no e-mail."); lock.unlock()
+            save()
+            return emailId
+        }
+        lock.lock(); reports[emailId] = DeliveryReport(status: "queued", details: "Sending…"); lock.unlock()
+        save()
+        do {
+            try await deliver(rumor, to: [b], selfCopy: false)
+        } catch {
+            lock.lock(); reports[emailId] = DeliveryReport(status: "failed", details: "It could not be prepared. Try again."); lock.unlock()
+            save()
+            throw BelfryError.invalid("The e-mail could not be prepared. Try again.")
+        }
+        return emailId
+    }
+
     /// Outbox news: a DM is out once no wrap for someone else waits any more.
     public func outboxSent(_ item: OutboxItem) {
         guard let rid = item.dm else { return }

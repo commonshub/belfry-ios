@@ -50,7 +50,9 @@ enum Demo {
         let welcome = msg(ps["ana"]!, "general", y - 7200, "Welcome to our belfry! Everything we say here stays on **our own server**.")
         msg(ps["ben"]!, "general", y - 7000, "Finally 🎉 No more group chat in someone else's app.")
         let ladder = msg(ps["chloe"]!, "general", y - 3600, "Does anyone have a long ladder? The gutter above the #garden shed is full of leaves.")
-        msg(you, "general", y - 3000, "I can bring mine on Saturday, it's 4 m.")
+        let mine = msg(you, "general", y - 3000, "I can bring mine on Saturday, it's 4 m.")
+        evs.append(ev(you, 1010, y - 2900, Actions.editMessage("general", Derive.parseMedia(mine), text: "I can bring mine on Saturday, it's 5 m.").tags,
+                      "I can bring mine on Saturday, it's 5 m."))
         msg(ps["dev"]!, "general", now - 5400, "Reminder: repair café this Saturday from 10:00. Bring lamps, bikes, toasters…\n\n- coffee is on us\n- spare parts welcome")
         let budget = msg(ps["emma"]!, "general", now - 3000, "Draft budget for 2027 is in the shared folder. Comments before Friday please, nostr:\(Bech32.npub(me)!)")
         msg(ps["ana"]!, "general", now - 1200, "Thanks Emma! I'll read it tonight.")
@@ -78,6 +80,57 @@ enum Demo {
         for (i, k) in ["ana", "ben", "chloe", "dev", "emma"].enumerated() {
             evs.append(ev(ps[k]!, 30078, now - i * 3600, [["d", "seen:general"], ["h", "general"]]))
         }
+        // SPEC 19 in the demo: a pin, to-dos, a pod, a proposal under vote, a Belfry event, a channel
+        // reference, an announcement, an agent guest, pinned topics
+        evs.append(ev(ps["ana"]!, 1985, y - 7000, Actions.pinMessage("general", messageId: welcome.id, pin: true).tags))
+        evs.append(ev(you, 2100, now - 2800, Actions.addTask("general", title: "Comment on the 2027 budget", from: budget.id).tags, "Comment on the 2027 budget"))
+        let compost = ev(ps["ben"]!, 2100, now - 3 * day, Actions.addTask("general", title: "Order compost for the beds").tags, "Order compost for the beds")
+        evs.append(compost)
+        evs.append(ev(ps["chloe"]!, 2101, now - 2 * day, Actions.taskAction("general", taskId: compost.id, action: "claim").tags))
+        evs.append(ev(ps["dev"]!, 2100, now - day, Actions.addTask("general", title: "Fix the hall's front door lock").tags, "Fix the hall's front door lock"))
+        let pod = "pod-seed-swap-5e1d"
+        evs.append(ev(ps["ben"]!, 9007, now - 6 * day, [["h", pod]]))
+        evs.append(ev(ps["ben"]!, 9002, now - 6 * day, [["h", pod], ["name", "Seed swap"], ["about", "Saving and swapping seeds"], ["closed"], ["prompt", "Which seeds would you bring?"]]))
+        channel(pod, "Seed swap", "Saving and swapping seeds", admins: [ps["ben"]!.pubkey], members: [ps["ben"]!.pubkey, ps["chloe"]!.pubkey, ps["emma"]!.pubkey, ps["dev"]!.pubkey], at: now - 6 * day)
+        msg(ps["ben"]!, "general", now - 6 * day, "⬡ New pod: Seed swap · Saving and swapping seeds")
+        evs[evs.count - 1] = ev(ps["ben"]!, 9, now - 6 * day, [["h", "general"], ["pod", pod]], "⬡ New pod: Seed swap · Saving and swapping seeds")
+        msg(ps["chloe"]!, pod, now - 5 * day, "I have three kinds of beans to share 🫘")
+        let propGroup = "prop-quiet-hours-7f3a2b"
+        let (pid, pdrafts) = Actions.createProposal(NewProposal(title: "Quiet hours after 22:00", summary: "No loud work in the yard after ten", text: "From Monday to Saturday, no drilling or music in the yard after **22:00**.", status: .voting),
+                                                    parent: "general", me: ps["emma"]!.pubkey, groupsRelay: "wss://groups-relay.demo.belfry.sh", mainRelay: "wss://relay.demo.belfry.sh", now: now - 2 * day, x: "7f3a2b")
+        _ = pid
+        var pollId = ""
+        for (i, dr) in pdrafts.enumerated() {
+            let e = ev(ps["emma"]!, dr.kind, now - 2 * day + i, dr.tags, dr.content)
+            evs.append(e)
+            if dr.kind == 1068 { pollId = e.id }
+        }
+        evs.append(ev(ps["ana"]!, 1018, now - day, [["h", propGroup], ["e", pollId], ["response", "yes"]]))
+        evs.append(ev(ps["ben"]!, 1018, now - day + 60, [["h", propGroup], ["e", pollId], ["response", "no"]]))
+        msg(ps["ana"]!, propGroup, now - day, "Fine by me, but what about the summer party?")
+        let dd = "2026-rpcafe"
+        let start = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date(timeIntervalSince1970: TimeInterval(now + 2 * day)))!
+        var form = EventForm(title: "Repair café")
+        form.description = "Bring lamps, bikes, toasters. Coffee is on us."
+        form.start = Int(start.timeIntervalSince1970)
+        form.end = form.start + 3 * 3600
+        form.tz = TimeZone.current.identifier
+        form.location = "Community hall"
+        form.slug = "repair-cafe"
+        for (i, dr) in EventActions.create(form, d: dd, me: ps["dev"]!.pubkey, groupsRelay: "wss://groups-relay.demo.belfry.sh", mainRelay: "wss://relay.demo.belfry.sh").enumerated() {
+            evs.append(ev(ps["dev"]!, dr.kind, now - 3 * day + i, dr.tags, dr.content))
+        }
+        let coord = "31923:\(ps["dev"]!.pubkey):\(dd)"
+        evs.append(ev(ps["dev"]!, 9, now - 3 * day + 10, [["h", "general"], ["a", coord, "wss://relay.demo.belfry.sh"]], "Saturday's repair café has its page: https://demo.belfry.sh/events/repair-cafe"))
+        evs.append(ev(ps["ana"]!, 31925, now - 2 * day, [["d", "a1"], ["a", coord], ["status", "accepted"], ["p", ps["dev"]!.pubkey]]))
+        evs.append(ev(ps["ben"]!, 31925, now - 2 * day, [["d", "b1"], ["a", coord], ["status", "accepted"], ["p", ps["dev"]!.pubkey]]))
+        let gardenRef = Nip19.naddr(Nip19.Addr(kind: 39000, pubkey: relay.pubkey, identifier: "garden-3f2a", relays: ["wss://groups-relay.demo.belfry.sh"])) ?? ""
+        msg(ps["ben"]!, "general", now - 4000, "Seed talk carries on in nostr:\(gardenRef) 🌱")
+        let ann = Actions.postMessage("general", text: "The hall is closed on Sunday for cleaning.", announce: true)
+        evs.append(ev(ps["ana"]!, 9, now - 5000, ann.tags, ann.content))
+        evs.append(ev(groupsKey, 1985, now - 1900, [["h", "general"], ["L", "belfry/guest"], ["l", "saved", "belfry/guest"], ["p", signer("guest").pubkey]]))
+        evs.append(ev(groupsKey, 9000, now - 1500, [["h", "general"], ["p", signer("helper").pubkey, "member"], ["invited-by", me], ["agent", "1"], ["name", "Minutes helper"]]))
+        evs.append(ev(ps["ana"]!, 1985, now - 10 * day, Actions.setTopics("general", ["garden"]).tags))
         msg(ps["ben"]!, "garden-3f2a", now - 4 * day, "Tomatoes are in. Watering rota: Mon Ana, Wed me, Fri Chloé.")
         msg(ps["chloe"]!, "garden-3f2a", now - 2 * day, "The basil did not survive the cold night 🥲")
         msg(ps["dev"]!, "repair-cafe-91bc", now - 3 * day, "Who can fix a **sewing machine**? Asking for Mrs. Dupont.")

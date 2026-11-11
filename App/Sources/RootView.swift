@@ -10,6 +10,7 @@ enum SidebarItem: Hashable {
 }
 
 struct SearchTarget: Hashable { let channel: String; let message: String }
+struct EventKey: Identifiable { let key: String; var id: String { key } }
 
 struct RootView: View {
     @EnvironmentObject var model: AppModel
@@ -19,7 +20,7 @@ struct RootView: View {
     @State private var account = false
     @State private var focus: SearchTarget?
     @State private var visibility = NavigationSplitViewVisibility.automatic
-    @State private var path = [ConvRoute]()
+    @State private var path = NavigationPath()
 
     var body: some View {
         NavigationSplitView(columnVisibility: $visibility) {
@@ -33,10 +34,36 @@ struct RootView: View {
                 }
             }
             .environment(\.openConversation) { conv in
-                path = [ConvRoute(conv: conv)]
+                var p = NavigationPath()
+                p.append(ConvRoute(conv: conv))
+                path = p
             }
         }
-        .onChange(of: selection) { _, _ in path = [] }
+        .environment(\.openChannel) { id, message in
+            focus = message.map { SearchTarget(channel: id, message: $0) }
+            if selection == .channel(id) { path = NavigationPath() } else { selection = .channel(id) }
+        }
+        .onChange(of: selection) { _, _ in path = NavigationPath() }
+        .onChange(of: model.messageAuthor) { _, pk in
+            guard let pk else { return }
+            model.messageAuthor = nil
+            selection = .messages
+            let conv = MailThreads.nostrConv(author: pk, pTags: [], me: model.me)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                var p = NavigationPath()
+                p.append(ConvRoute(conv: conv))
+                path = p
+            }
+        }
+        .sheet(item: Binding(get: { model.openEvent.map { EventKey(key: $0) } }, set: { model.openEvent = $0?.key })) { k in
+            EventPage(key: k.key)
+        }
+        .sheet(item: Binding(get: { model.showEvents.map { EventKey(key: $0) } }, set: { model.showEvents = $0?.key })) { k in
+            EventsList(channel: k.key.isEmpty ? nil : k.key)
+        }
+        .alert(model.website ?? "", isPresented: Binding(get: { model.website != nil }, set: { if !$0 { model.website = nil } })) {
+            Button("OK") { model.website = nil }
+        }
         .onAppear(perform: applyLaunchScreen)
         .sheet(isPresented: $newChannel) { NewChannelSheet { id in selection = .channel(id) } }
         .sheet(isPresented: $account) { AccountSheet() }
@@ -76,7 +103,7 @@ struct RootView: View {
                     }
                 }
                 Section("Channels") {
-                    ForEach(model.groups.filter { $0.type != .pod && $0.type != .proposal || $0.members.contains(model.me) }) { g in
+                    ForEach(model.groups.filter { $0.type == .channel || ($0.isPod || $0.isProposal) && $0.members.contains(model.me) }) { g in
                         NavigationLink(value: SidebarItem.channel(g.id)) { ChannelRow(group: g) }
                     }
                 }
@@ -101,7 +128,12 @@ struct RootView: View {
 
     private func applyLaunchScreen() {
         switch model.launch.screen {
-        case "feed", "thread", "details", "invite", "actions": selection = .channel(generalId)
+        case "feed", "thread", "details", "invite", "actions", "pulldown", "menu", "delete", "edit", "threadscreen", "chsearch", "add": selection = .channel(generalId)
+        case "pod": selection = .channel("pod-seed-swap-5e1d")
+        case "proposal": selection = .channel("prop-quiet-hours-7f3a2b")
+        case "event":
+            selection = .channel(generalId)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.openEvent = "repair-cafe" }
         case "messages", "conversation", "mail": selection = .messages
         case "search": query = "ladder"
         default: break
@@ -116,11 +148,9 @@ struct ChannelRow: View {
     var body: some View {
         let last = model.derive.messages(group.id).last
         HStack(spacing: 12) {
-            Text(group.icon)
-                .font(.title3.weight(.semibold))
+            ChannelGlyph(group: group, size: 22)
                 .frame(width: 32, height: 32)
                 .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8))
-                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(group.name).font(.body.weight(.medium)).lineLimit(1)
                 if let last {
@@ -137,7 +167,7 @@ struct ChannelRow: View {
 
     func preview(_ t: String) -> String {
         let plain = Rx("\\*\\*|__|~~|`").replace(t, with: "")
-        return Mentions.npubInText.replace(plain, with: "@…").replacingOccurrences(of: "\n", with: " ")
+        return model.derive.plainRefs(plain).replacingOccurrences(of: "\n", with: " ")
     }
 }
 
@@ -180,7 +210,7 @@ struct SearchResults: View {
                                 Text(model.name(m.ev.pubkey)).font(.subheadline.bold())
                                 Text("\(model.group(gid)?.icon ?? "#")\(model.group(gid)?.name ?? gid)").font(.caption).foregroundStyle(.secondary)
                             }
-                            Text(m.text).font(.subheadline).lineLimit(3).foregroundStyle(.primary)
+                            Text(model.derive.plainRefs(m.text)).font(.subheadline).lineLimit(3).foregroundStyle(.primary)
                         }
                     }
                 }
@@ -192,14 +222,7 @@ struct SearchResults: View {
 
     func results(_ words: [String]) -> [Hit] {
         guard !words.isEmpty else { return [] }
-        var out = [Hit]()
-        for g in model.groups {
-            for m in model.derive.messages(g.id) {
-                let hay = fold("\(m.text) \(model.name(m.ev.pubkey)) \(m.media.compactMap(\.name).joined(separator: " "))")
-                if words.allSatisfy({ hay.contains($0) }) { out.append(Hit(channel: g.id, message: m)) }
-            }
-        }
-        return Array(out.sorted { $0.message.ev.createdAt > $1.message.ev.createdAt }.prefix(200))
+        return model.derive.search(query).map { Hit(channel: $0.groupId, message: $0.m) }
     }
 }
 

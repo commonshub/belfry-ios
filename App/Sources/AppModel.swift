@@ -274,8 +274,190 @@ final class AppModel: ObservableObject {
 
     // ---- actions -----------------------------------------------------------------------------------
 
-    func post(_ text: String, in group: String, attachments: [Attachment] = [], announce: Bool = false) {
-        engine?.enqueue(Actions.postMessage(group, text: text, announce: announce), attachments: attachments)
+    func post(_ text: String, in group: String, attachments: [Attachment] = [], announce: Bool = false, topic: String? = nil) {
+        let tags = derive.eventTagsFor(text, mainRelay: config.mainRelay)
+        engine?.enqueue(Actions.postMessage(group, text: text, topic: topic, announce: announce, eventTags: tags), attachments: attachments)
+    }
+
+    /// Edit my own message or thread reply (kind 1010; SPEC 19.1).
+    func edit(_ m: Message, in group: String, text: String) {
+        guard derive.canEdit(m) else { return }
+        engine?.enqueue(Actions.editMessage(group, m, text: text))
+    }
+
+    func pin(_ m: Message, in group: String, _ on: Bool) {
+        engine?.enqueue(Actions.pinMessage(group, messageId: m.id, pin: on))
+    }
+
+    /// "Turn into a to-do" (SPEC 19.11).
+    func makeTodo(_ m: Message, in group: String) {
+        guard derive.canMakeTodo(group, m) else { return }
+        engine?.enqueue(Actions.addTask(group, title: derive.todoTitle(m), from: m.id))
+    }
+
+    func addTodo(_ title: String, in group: String) {
+        let t = title.jsTrim()
+        guard !t.isEmpty else { return }
+        engine?.enqueue(Actions.addTask(group, title: t))
+    }
+
+    /// ACTION: claim | unclaim | done | undone | delete
+    func todo(_ t: TodoTask, in group: String, _ action: String) {
+        engine?.enqueue(Actions.taskAction(group, taskId: t.id, action: action))
+    }
+
+    func commentTodo(_ t: TodoTask, in group: String, text: String) {
+        engine?.enqueue(Actions.commentTask(group, taskId: t.id, text: text))
+    }
+
+    func createPod(name: String, about: String, parent: String, closed: Bool, prompt: String) -> String {
+        let id = Actions.newPodId(name)
+        for d in Actions.createPod(id: id, name: name, about: about, parent: parent, access: PodAccess(closed: closed, prompt: prompt)) { engine?.enqueue(d) }
+        return id
+    }
+
+    func editPod(_ id: String, name: String, about: String, closed: Bool, prompt: String) {
+        engine?.enqueue(Actions.editPod(id, name: name, about: about, access: PodAccess(closed: closed, prompt: prompt)))
+    }
+
+    func createProposal(_ n: NewProposal, parent: String) -> String {
+        let (id, drafts) = Actions.createProposal(n, parent: parent, me: me, groupsRelay: config.groupsRelay, mainRelay: config.mainRelay, now: .now)
+        for d in drafts { engine?.enqueue(d) }
+        return id
+    }
+
+    func reviseProposal(_ p: Proposal, title: String, summary: String, text: String, note: String) {
+        for d in Actions.reviseProposal(p, title: title, summary: summary, text: text, note: note, groupsRelay: config.groupsRelay, mainRelay: config.mainRelay, now: .now) { engine?.enqueue(d) }
+    }
+
+    func vote(_ p: Proposal, _ option: String) {
+        if let d = Actions.vote(p, option: option) { engine?.enqueue(d) }
+    }
+
+    func setStatus(_ p: Proposal, _ status: ProposalStatus) {
+        for d in Actions.setProposalStatus(p, status) { engine?.enqueue(d) }
+    }
+
+    func apply(_ id: String, answer: String) { engine?.enqueue(Actions.join(id, answer: answer)) }
+    func leave(_ id: String) { engine?.enqueue(Actions.leave(id)) }
+    func admit(_ id: String, _ pk: String) { engine?.enqueue(Actions.admit(id, pubkey: pk)) }
+    func declineApplicant(_ id: String, _ pk: String) { engine?.enqueue(Actions.decline(id, pubkey: pk)) }
+
+    func pinTopic(_ topic: String, in group: String, _ on: Bool) {
+        engine?.enqueue(Actions.pinTopic(group, pinned: derive.pinnedTopics(group), topic: topic, pin: on))
+    }
+
+    func setMemberLabels(_ pk: String, in group: String, labels: [String]) {
+        engine?.enqueue(Actions.setMemberLabels(group, pubkey: pk, labels: labels))
+    }
+
+    /// Drop a message that could not be sent (its outbox item).
+    func discard(_ localId: String) { engine?.cancel(localId) }
+
+    func assignCard(_ card: Message, in group: String, to assignee: String) {
+        engine?.enqueue(Actions.assignCard(group, card: card.id, assignee: assignee))
+    }
+
+    func setCard(_ card: Message, in group: String, closed: Bool) {
+        engine?.enqueue(Actions.setCardStatus(group, card: card.id, closed: closed))
+    }
+
+    /// Answer an inbox card by e-mail as the channel (after the 8 s undo). Fixed messages only.
+    func replyAsChannel(_ card: Message, in group: String, to: String, subject: String, text: String) async -> String? {
+        guard let dms else { return "Not signed in." }
+        let base = MailThreads.baseSubject(subject)
+        let subj = base.isEmpty ? "(no subject)" : (subject.lowercased().hasPrefix("re:") ? subject : "Re: " + subject)
+        do {
+            try await dms.sendAsChannel(channel: group, channelName: self.group(group)?.name ?? group, to: to, subject: subj, text: text,
+                                        inReplyTo: card.ev.tag("message-id"), cardId: card.id, myName: realName(me))
+            return nil
+        } catch let e as BelfryError {
+            return e.errorDescription ?? "The e-mail could not be prepared. Try again."
+        } catch {
+            return "The e-mail could not be prepared. Try again."
+        }
+    }
+
+    /// "Kofi", or the start of their key (never "You").
+    func realNameOrKey(_ pk: String) -> String {
+        let n = realName(pk)
+        return n.isEmpty ? Derive.shortKey(pk) : n
+    }
+
+    /// Someone to write to (a NIP-17 conversation), from a message menu or a profile.
+    @Published var messageAuthor: String?
+    /// The last "Make this the website" answer (a fixed message), shown once.
+    @Published var website: String?
+
+    func publishWebsite(ref: String, message: String) async -> String {
+        guard let engine, !engine.localOnly else { return "Demo mode publishes nothing." }
+        do {
+            try await api.publishWebsite(ref: ref, messageId: message)
+            return "Published: it is the website now."
+        } catch let e as ApiError {
+            return e.message
+        } catch {
+            return BelfryAPI.generic
+        }
+    }
+
+    /// Bring someone who is here already into a channel (SPEC 19.15): a guest becomes its guest
+    /// (`/channel-guests`); a member gets a direct message with the link (in a closed group I
+    /// administer they are let in first). Returns a fixed line saying what happened.
+    func inviteHere(_ pk: String, to groupId: String) async -> String {
+        let d = derive
+        let g = d.group(groupId)
+        if d.isGuest(pk) {
+            if engine?.localOnly == true { return "Added as a guest (demo)." }
+            do {
+                let r = try await api.addChannelGuest(channel: groupId, pubkey: pk)
+                if !r.member { return r.already ? "They're in already." : "Added as a guest." }
+            } catch let e as ApiError {
+                return e.message
+            } catch {
+                return BelfryAPI.generic
+            }
+        }
+        var asked = false
+        if let g, g.closed {
+            if d.canAdmin(g) { engine?.enqueue(Actions.admit(groupId, pubkey: pk)) } else { asked = true }
+        }
+        guard let dms else { return "Not signed in." }
+        do {
+            try await dms.send(d.inviteText(groupId, asked: asked), in: MailThreads.nostrConv(author: pk, pTags: [], me: me))
+            return asked ? "Sent: they can ask to join." : "Invited: they got a message with the link."
+        } catch {
+            return "The invite could not be sent. Try again."
+        }
+    }
+
+    /// RSVP: a member's on the community relay, a guest's on the groups relay (SPEC 19.18).
+    func rsvp(_ e: CalEvent, _ r: Rsvp) {
+        let d = derive
+        let ticket = e.isNew ? d.eventPeople(e).holders[me] : nil
+        engine?.enqueue(EventActions.rsvp(e, r, me: me, ticketD: ticket, onGroups: e.remote || d.amGuest, eventPending: d.isPending(e.ev.id)))
+    }
+
+    /// Opens a channel's events list (All events of that channel), from the pull-down.
+    @Published var showEvents: String?
+
+    /// An event to show (its coordinate or link), from a card anywhere.
+    @Published var openEvent: String?
+    /// Screenshots: open the delete confirmation / the ＋ menu once.
+    @Published var launchDelete = false
+    @Published var launchAdd = false
+
+    // ---- pins I hid on this phone ("Got it, hide"; at most 200; SPEC 19.10) ---------------------
+
+    @Published private(set) var hiddenPins: Set<String> = Set(UserDefaults.standard.stringArray(forKey: "belfry-pins-hidden") ?? [])
+
+    func hidePin(_ id: String) {
+        var list = UserDefaults.standard.stringArray(forKey: "belfry-pins-hidden") ?? []
+        list.removeAll { $0 == id }
+        list.append(id)
+        list = Array(list.suffix(200))
+        UserDefaults.standard.set(list, forKey: "belfry-pins-hidden")
+        hiddenPins = Set(list)
     }
 
     func reply(_ text: String, in group: String, to root: Message) {

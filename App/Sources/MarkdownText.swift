@@ -59,7 +59,7 @@ struct MarkdownText: View {
         var out = AttributedString()
         for n in nodes {
             switch n {
-            case .text(let s): out += AttributedString(s)
+            case .text(let s): out += refs(s)
             case .bold(let c): out += adding(.stronglyEmphasized, attr(c))
             case .italic(let c): out += adding(.emphasized, attr(c))
             case .strike(let c): out += adding(.strikethrough, attr(c))
@@ -81,6 +81,39 @@ struct MarkdownText: View {
                 out += a
             }
         }
+        return out
+    }
+
+    /// Channel references (SPEC 19.14): "#name" that opens the channel; "#channel" (muted) for one
+    /// not known here, "Nostr address" for an naddr that is not a channel's. A raw naddr is never shown.
+    func refs(_ s: String) -> AttributedString {
+        let ms = ChannelRefs.naddrRx.matches(s)
+        if ms.isEmpty { return AttributedString(s) }
+        let ns = s as NSString
+        var out = AttributedString()
+        var at = 0
+        for m in ms {
+            out += AttributedString(ns.substring(with: NSRange(location: at, length: m.range.location - at)))
+            let naddr = m[1] ?? ""
+            if let id = ChannelRefs.groupOf(naddr) {
+                if let g = model.group(id) {
+                    var a = AttributedString("#" + g.name)
+                    a.foregroundColor = .bronze
+                    a.link = URL(string: "belfry-channel://open/" + MailThreads.encodeURIComponent(id))
+                    out += adding(.stronglyEmphasized, a)
+                } else {
+                    var a = AttributedString("#channel")
+                    a.foregroundColor = .secondary
+                    out += a
+                }
+            } else {
+                var a = AttributedString("Nostr address")
+                a.foregroundColor = .secondary
+                out += a
+            }
+            at = m.range.location + m.range.length
+        }
+        out += AttributedString(ns.substring(from: at))
         return out
     }
 

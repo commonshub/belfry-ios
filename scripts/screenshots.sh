@@ -53,6 +53,16 @@ shot 07-messages messages light
 shot 08-conversation conversation light
 shot 09-email mail light
 shot 10-search search light
+shot 13-pulldown pulldown light
+shot 14-message-menu menu light
+shot 15-delete-confirm delete light
+shot 16-edit edit light
+shot 17-thread-screen threadscreen light
+shot 18-channel-search chsearch light
+shot 19-add-menu add light
+shot 20-pod pod light
+shot 21-proposal proposal light
+shot 22-event event light
 shot 11-feed-dark feed dark
 shot 12-channels-dark channels dark
 xcrun simctl ui "$UDID" appearance light || true
