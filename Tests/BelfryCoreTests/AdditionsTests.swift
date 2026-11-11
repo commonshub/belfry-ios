@@ -285,3 +285,28 @@ final class LineAndLinksTests: XCTestCase {
         XCTAssertEqual(Outbox.classify("upload failed (503)"), .retry)
     }
 }
+
+final class EventsApiTests: XCTestCase {
+    func testParseAnswer() throws {
+        let json = """
+        {"d":"2026-ab12cd","coord":"31923:\(String(repeating: "a", count: 64)):2026-ab12cd","kind":31923,"group":"ev-2026-ab12cd","link":"picnic",
+         "url":"https://x.org/events/picnic","title":"Picnic","description":"Bring food","all_day":false,"start":"2026-12-01T18:00:00+01:00",
+         "end":"2026-12-01T21:00:00+01:00","tz":"Europe/Brussels","location":"Park","online":true,"links":["https://meet.jit.si/x","javascript:alert(1)"],
+         "cover":"https://x.org/events/picnic/cover","visibility":"link","status":"scheduled","status_reason":"","hosts":[{"pubkey":"\(String(repeating: "a", count: 64))","name":"Ana"}],
+         "tickets":[{"d":"2026-ab12cd:t1","id":"t1","title":"Seat","quantity":10,"left":3,"closed":true,"prompt":"Why?","members":false,"position":1,"implicit":false}],
+         "going":7,"community":"X","me":{"host":false,"ticket":null,"applied":true,"waitlist":false,"declined":false,"rsvp":null,"member":false}}
+        """
+        let o = try XCTUnwrap(JSON.parse(json) as? [String: Any])
+        let a = try XCTUnwrap(BelfryAPI.parseEvent(o))
+        XCTAssertEqual(a.links, ["https://meet.jit.si/x"])
+        XCTAssertEqual(a.tickets.first?.ticket.apiLeft, 3)
+        XCTAssertEqual(a.myState, .applied)
+        let e = a.calEvent(timeZone: TimeZone(identifier: "UTC")!, me: B)
+        XCTAssertEqual(e.start, 1_796_144_400)
+        XCTAssertEqual(e.slug, "picnic")
+        XCTAssertEqual(e.goingCount, 7)
+        XCTAssertTrue(e.remote)
+        XCTAssertEqual(e.visibility, .link)
+        XCTAssertNil(BelfryAPI.parseEvent(["d": "x"]))
+    }
+}

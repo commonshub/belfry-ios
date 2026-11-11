@@ -95,10 +95,9 @@ enum Demo {
         msg(ps["ben"]!, "general", now - 6 * day, "⬡ New pod: Seed swap · Saving and swapping seeds")
         evs[evs.count - 1] = ev(ps["ben"]!, 9, now - 6 * day, [["h", "general"], ["pod", pod]], "⬡ New pod: Seed swap · Saving and swapping seeds")
         msg(ps["chloe"]!, pod, now - 5 * day, "I have three kinds of beans to share 🫘")
-        let propGroup = "prop-quiet-hours-7f3a2b"
         let (pid, pdrafts) = Actions.createProposal(NewProposal(title: "Quiet hours after 22:00", summary: "No loud work in the yard after ten", text: "From Monday to Saturday, no drilling or music in the yard after **22:00**.", status: .voting),
                                                     parent: "general", me: ps["emma"]!.pubkey, groupsRelay: "wss://groups-relay.demo.belfry.sh", mainRelay: "wss://relay.demo.belfry.sh", now: now - 2 * day, x: "7f3a2b")
-        _ = pid
+        let propGroup = pid // prop-quiet-hours-after-22-00-7f3a2b
         var pollId = ""
         for (i, dr) in pdrafts.enumerated() {
             let e = ev(ps["emma"]!, dr.kind, now - 2 * day + i, dr.tags, dr.content)
@@ -124,6 +123,20 @@ enum Demo {
         evs.append(ev(ps["dev"]!, 9, now - 3 * day + 10, [["h", "general"], ["a", coord, "wss://relay.demo.belfry.sh"]], "Saturday's repair café has its page: https://demo.belfry.sh/events/repair-cafe"))
         evs.append(ev(ps["ana"]!, 31925, now - 2 * day, [["d", "a1"], ["a", coord], ["status", "accepted"], ["p", ps["dev"]!.pubkey]]))
         evs.append(ev(ps["ben"]!, 31925, now - 2 * day, [["d", "b1"], ["a", coord], ["status", "accepted"], ["p", ps["dev"]!.pubkey]]))
+        // an event I host, by application, with someone asking
+        let dd2 = "2026-gwday1"
+        var form2 = EventForm(title: "Garden work day")
+        form2.description = "Digging the new beds. Lunch for everyone who helps."
+        form2.start = form.start + 5 * day
+        form2.end = form2.start + 5 * 3600
+        form2.tz = TimeZone.current.identifier
+        form2.location = "The garden"
+        form2.applicationPrompt = "What can you bring (tools, food)?"
+        for (i, dr) in EventActions.create(form2, d: dd2, me: me, groupsRelay: "wss://groups-relay.demo.belfry.sh", mainRelay: "wss://relay.demo.belfry.sh", ticketId: "help").enumerated() {
+            evs.append(ev(you, dr.kind, now - 2 * day + i, dr.tags, dr.content))
+        }
+        evs.append(ev(ps["emma"]!, 9021, now - day, [["h", "ev-" + dd2], ["ticket", dd2 + ":help"]], "Two spades and a quiche"))
+        evs.append(ev(you, 9, now - 2 * day + 20, [["h", "garden-3f2a"], ["a", "31923:\(me):\(dd2)", "wss://relay.demo.belfry.sh"]], "Work day next week, by application: https://demo.belfry.sh/events/\(dd2)"))
         let gardenRef = Nip19.naddr(Nip19.Addr(kind: 39000, pubkey: relay.pubkey, identifier: "garden-3f2a", relays: ["wss://groups-relay.demo.belfry.sh"])) ?? ""
         msg(ps["ben"]!, "general", now - 4000, "Seed talk carries on in nostr:\(gardenRef) 🌱")
         let ann = Actions.postMessage("general", text: "The hall is closed on Sunday for cleaning.", announce: true)

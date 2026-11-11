@@ -245,7 +245,7 @@ public final class SyncEngine: @unchecked Sendable {
 
     // ---- Blossom, NIP-98 -------------------------------------------------------------------------
 
-    func upload(_ data: Data, name: String, mime: String, sha: String) async throws -> String {
+    public func upload(_ data: Data, name: String, mime: String, sha: String) async throws -> String {
         let auth = try await signer.sign(Actions.blossomAuth(sha256: sha, name: name))
         guard let url = URL(string: config.blossom + "/upload") else { throw BelfryError.network("upload failed (no file server)") }
         var req = URLRequest(url: url, timeoutInterval: 120)

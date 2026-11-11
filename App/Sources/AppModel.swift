@@ -18,14 +18,29 @@ final class AppModel: ObservableObject {
     enum Phase: Equatable { case signedOut, ready }
 
     @Published var phase: Phase = .signedOut
-    @Published private(set) var version = 0
+    @Published var version = 0
+    /// A guest link waiting to be used (kept through sign-in; only its domain and token).
+    @Published var pendingInvite: PendingInvite? = (UserDefaults.standard.data(forKey: "belfry-invite")).flatMap { try? JSONDecoder().decode(PendingInvite.self, from: $0) } {
+        didSet { UserDefaults.standard.set(pendingInvite.flatMap { try? JSONEncoder().encode($0) }, forKey: "belfry-invite") }
+    }
+    /// Someone's profile to show, from a face, a name or a mention anywhere.
+    @Published var openProfile: String?
+    /// The channel a guest link just brought me into (opened once).
+    @Published var joinedChannel: String?
+    /// A co-host link used by someone new: once their e-mail is proven, the link is used again.
+    @Published var coHostToken: String?
+    var demoFollows = [String: String]()
+    /// Events read through the belfry's API, by link (a minute).
+    var remoteEvents = [String: (at: Date, event: ApiEvent)]()
+    /// Text to put in a channel's composer (an event's URL after making it from the channel's ＋).
+    @Published var composerPrefill = [String: String]()
     @Published var config: BelfryConfig = .defaults(domain: "belfry.sh")
     @Published var signInError: String?
     @Published var busy = false
 
     private(set) var engine: SyncEngine?
     private(set) var dms: DirectMessages?
-    private var session: StoredSession?
+    private(set) var session: StoredSession?
     private var cachedDerive: (Int, Derive)?
     private var cachedGroups: (Int, [BelfryCore.Group])?
     private var cachedProfiles: (Int, [String: Profile])?
@@ -43,7 +58,10 @@ final class AppModel: ObservableObject {
     static let redirectURI = "sh.belfry.app://connect"
 
     init() {
-        if launch.demo {
+        if ProcessInfo.processInfo.arguments.contains("-join") {
+            pendingInvite = PendingInvite(domain: "demo.belfry.sh", token: "demoinvite0123456789abcd")
+        } else if launch.demo {
+            pendingInvite = nil
             startDemo()
         } else if let s = Keychain.load() {
             open(s)
@@ -123,7 +141,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    private func open(_ s: StoredSession, config cfg: BelfryConfig? = nil) {
+    func open(_ s: StoredSession, config cfg: BelfryConfig? = nil) {
         session = s
         let db: Database
         if s.demo {
@@ -446,6 +464,7 @@ final class AppModel: ObservableObject {
     /// Screenshots: open the delete confirmation / the ＋ menu once.
     @Published var launchDelete = false
     @Published var launchAdd = false
+    @Published var launchEventForm = false
 
     // ---- pins I hid on this phone ("Got it, hide"; at most 200; SPEC 19.10) ---------------------
 
@@ -495,6 +514,7 @@ final class AppModel: ObservableObject {
     }
 
     func join(_ id: String) { engine?.enqueue(Actions.join(id)) }
+    func editChannelInbox(_ id: String, _ on: Bool) { engine?.enqueue(Actions.setInbox(id, on: on)) }
 
     /// Opening a channel tells it, at most every 6 hours.
     func markSeen(_ id: String) {

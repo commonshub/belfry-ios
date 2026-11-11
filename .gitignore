@@ -8,3 +8,4 @@ DerivedData/
 tools/vectors/node_modules
 /screenshots
 App/Info.plist
+App/Belfry.entitlements

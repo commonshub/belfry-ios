@@ -35,6 +35,8 @@ shot() { # name screen appearance
   xcrun simctl terminate "$UDID" "$BUNDLE" >/dev/null 2>&1 || true
   if [ "$2" = "signin" ]; then
     xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
+  elif [ "$2" = "join" ]; then
+    xcrun simctl launch "$UDID" "$BUNDLE" -join >/dev/null
   else
     xcrun simctl launch "$UDID" "$BUNDLE" -demo -screen "$2" >/dev/null
   fi
@@ -63,6 +65,16 @@ shot 19-add-menu add light
 shot 20-pod pod light
 shot 21-proposal proposal light
 shot 22-event event light
+shot 23-profile profile light
+shot 24-edit-profile editprofile light
+shot 25-me me light
+shot 26-members members light
+shot 27-todos todos light
+shot 28-files files light
+shot 31-all-events events light
+shot 32-event-host eventhost light
+shot 33-event-form eventform light
 shot 11-feed-dark feed dark
 shot 12-channels-dark channels dark
+shot 30-join join light
 xcrun simctl ui "$UDID" appearance light || true

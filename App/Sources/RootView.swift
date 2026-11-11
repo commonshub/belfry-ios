@@ -61,6 +61,17 @@ struct RootView: View {
         .sheet(item: Binding(get: { model.showEvents.map { EventKey(key: $0) } }, set: { model.showEvents = $0?.key })) { k in
             EventsList(channel: k.key.isEmpty ? nil : k.key)
         }
+        .sheet(item: Binding(get: { model.openProfile.map { ProfileKey(pubkey: $0) } }, set: { model.openProfile = $0?.pubkey })) { k in
+            ProfileView(pubkey: k.pubkey)
+        }
+        .sheet(item: Binding(get: { model.pendingInvite }, set: { if $0 == nil { model.pendingInvite = nil } })) { inv in
+            JoinWithAccountSheet(invite: inv)
+        }
+        .onChange(of: model.joinedChannel) { _, id in
+            guard let id else { return }
+            model.joinedChannel = nil
+            selection = .channel(id)
+        }
         .alert(model.website ?? "", isPresented: Binding(get: { model.website != nil }, set: { if !$0 { model.website = nil } })) {
             Button("OK") { model.website = nil }
         }
@@ -102,6 +113,20 @@ struct RootView: View {
                         } icon: { Image(systemName: "envelope") }
                     }
                 }
+                Section("Events") {
+                    Button { model.showEvents = "" } label: { Label("All events", systemImage: "calendar") }
+                    ForEach(model.derive.yourEvents(now: .now)) { e in
+                        NavigationLink(value: SidebarItem.channel(e.groupId)) {
+                            HStack(spacing: 10) {
+                                DateChip(at: e.start).scaleEffect(0.8).frame(width: 36, height: 36)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(e.title).lineLimit(1)
+                                    Text(model.derive.stateLabel(e) ?? "").font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+                }
                 Section("Channels") {
                     ForEach(model.groups.filter { $0.type == .channel || ($0.isPod || $0.isProposal) && $0.members.contains(model.me) }) { g in
                         NavigationLink(value: SidebarItem.channel(g.id)) { ChannelRow(group: g) }
@@ -130,7 +155,20 @@ struct RootView: View {
         switch model.launch.screen {
         case "feed", "thread", "details", "invite", "actions", "pulldown", "menu", "delete", "edit", "threadscreen", "chsearch", "add": selection = .channel(generalId)
         case "pod": selection = .channel("pod-seed-swap-5e1d")
-        case "proposal": selection = .channel("prop-quiet-hours-7f3a2b")
+        case "profile":
+            selection = .channel(generalId)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.openProfile = Demo.signer("ana").pubkey }
+        case "editprofile", "me":
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { account = true }
+        case "members", "todos", "files": selection = .channel(generalId)
+        case "proposal": selection = .channel("prop-quiet-hours-after-22-00-7f3a2b")
+        case "events": DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.showEvents = "" }
+        case "eventhost":
+            selection = .channel(generalId)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.openEvent = "2026-gwday1" }
+        case "eventform":
+            selection = .channel(generalId)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.launchEventForm = true }
         case "event":
             selection = .channel(generalId)
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.openEvent = "repair-cafe" }
@@ -253,46 +291,6 @@ struct NewChannelSheet: View {
             }
         }
         .presentationDetents([.medium])
-    }
-}
-
-struct AccountSheet: View {
-    @EnvironmentObject var model: AppModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var confirm = false
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    HStack(spacing: 14) {
-                        Avatar(pubkey: model.me, size: 56)
-                        VStack(alignment: .leading) {
-                            Text(model.realName(model.me).isEmpty ? "You" : model.realName(model.me)).font(.headline)
-                            Text(model.profiles[model.me]?.nip05 ?? model.config.domain).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                Section("Community") {
-                    LabeledContent("Name", value: model.config.name)
-                    LabeledContent("Address", value: model.config.domain)
-                    if let n = Bech32.npub(model.me) {
-                        LabeledContent("Your key") { Text(String(n.prefix(16)) + "…").font(.caption.monospaced()) }
-                    }
-                }
-                Section {
-                    Button(model.isDemo ? "Leave the demo" : "Sign out", role: .destructive) { confirm = true }
-                } footer: {
-                    Text("Signing out removes this belfry's messages from this phone. Your key stays on the belfry.")
-                }
-            }
-            .navigationTitle("Account")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .confirmationDialog("Sign out of \(model.config.name)?", isPresented: $confirm, titleVisibility: .visible) {
-                Button("Sign out", role: .destructive) { dismiss(); model.signOut() }
-            }
-        }
     }
 }
 

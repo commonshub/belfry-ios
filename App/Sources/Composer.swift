@@ -26,6 +26,7 @@ struct Composer: View {
     @State private var add = false
     @State private var photoPicker = false
     @State private var create: CreateKind?
+    @State private var makeEvent = false
     @State private var notes = [String: String]()
     @FocusState private var focused: Bool
 
@@ -124,9 +125,16 @@ struct Composer: View {
         .padding(.vertical, compact ? 0 : 8)
         .background(compact ? AnyShapeStyle(.clear) : AnyShapeStyle(.bar))
         .sensoryFeedback(.impact(weight: .light), trigger: sent)
+        .onChange(of: model.launchEventForm) { _, on in
+            if on, !compact, !threadMode { model.launchEventForm = false; makeEvent = true }
+        }
+        .onChange(of: model.composerPrefill[group]) { _, v in
+            if let v, !compact, !threadMode { text = text.isEmpty ? v + " " : text + " " + v; model.composerPrefill[group] = nil }
+        }
         .onAppear {
             if autoFocus { focused = true }
             if !compact && !threadMode && model.launchAdd { model.launchAdd = false; add = true }
+            if !compact && !threadMode && model.launchEventForm { model.launchEventForm = false; add = false; makeEvent = true }
         }
         .onChange(of: photos) { _, items in load(items) }
         .sheet(isPresented: $add) {
@@ -137,12 +145,14 @@ struct Composer: View {
                     case .photo: photoPicker = true
                     case .announcement: announce = true
                     case .create(let k): create = k
+                    case .event: makeEvent = true
                     }
                 }
             }
         }
         .photosPicker(isPresented: $photoPicker, selection: $photos, maxSelectionCount: 6, matching: .images)
         .sheet(item: $create) { k in CreateSheet(kind: k, parent: group) }
+        .sheet(isPresented: $makeEvent) { EventFormSheet(editing: nil, channel: group) }
     }
 
     func people(_ q: String) -> [(pubkey: String, name: String)] {
@@ -228,7 +238,7 @@ struct OutsiderNote: View {
 }
 
 enum CreateKind: String, Identifiable { case todo, pod, proposal; var id: String { rawValue } }
-enum AddChoice { case photo, announcement, create(CreateKind) }
+enum AddChoice { case photo, announcement, event, create(CreateKind) }
 
 /// The ＋ menu as a list.
 struct AddMenu: View {
@@ -246,6 +256,7 @@ struct AddMenu: View {
                 }
                 if !guest {
                     Section {
+                        Button { choose(.event) } label: { ActionRow(icon: "calendar", title: "Event", detail: "Its own page and address; its card shows here") }
                         Button { choose(.create(.pod)) } label: { ActionRow(icon: "hexagon", title: "Pod", detail: "A smaller group inside this channel") }
                         Button { choose(.create(.proposal)) } label: { ActionRow(icon: "doc.text", title: "Proposal", detail: "Something to decide together") }
                     }

@@ -30,11 +30,13 @@ struct MessageRow: View {
         let d = model.derive
         let pending = model.pending(m.id)
         HStack(alignment: .top, spacing: 10) {
-            if first { Avatar(pubkey: m.ev.pubkey, size: 36) } else { Color.clear.frame(width: 36, height: 1) }
+            if first {
+                Avatar(pubkey: m.ev.pubkey, size: 36).onTapGesture { model.openProfile = m.ev.pubkey }
+            } else { Color.clear.frame(width: 36, height: 1) }
             VStack(alignment: .leading, spacing: 4) {
                 if first {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(d.nameOver(m)).font(.subheadline.weight(.semibold)).lineLimit(1)
+                        Text(d.nameOver(m)).font(.subheadline.weight(.semibold)).lineLimit(1).onTapGesture { model.openProfile = m.ev.pubkey }
                         Text(Format.time(m.ev.createdAt)).font(.caption).foregroundStyle(.secondary)
                         if announce { Label("Announcement", systemImage: "megaphone").font(.caption2.weight(.semibold)).foregroundStyle(Color.bronze) }
                         if pinned { Image(systemName: "pin").font(.caption2).foregroundStyle(.secondary).accessibilityLabel("Pinned") }

@@ -50,6 +50,10 @@ public struct InviteInfo: Hashable, Sendable {
     /// open | used | expired | revoked
     public let state: String
     public let days: Int
+    public init(community: String, channel: String, channelName: String, about: String, inviter: String, state: String, days: Int) {
+        self.community = community; self.channel = channel; self.channelName = channelName; self.about = about
+        self.inviter = inviter; self.state = state; self.days = days
+    }
     public var isOpen: Bool { state == "open" }
     public var closedMessage: String? {
         switch state {

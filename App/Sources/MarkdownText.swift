@@ -73,6 +73,7 @@ struct MarkdownText: View {
                 let name = pk.isEmpty ? "nostr:" + npub : "@" + (model.realName(pk).isEmpty ? model.name(pk) : model.realName(pk))
                 var a = AttributedString(name)
                 a.foregroundColor = .bronze
+                if !pk.isEmpty { a.link = URL(string: "belfry-user://open/" + pk) }
                 a = adding(.stronglyEmphasized, a)
                 out += a
             case .topic(let t):

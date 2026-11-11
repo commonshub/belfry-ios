@@ -23,6 +23,14 @@ targets:
     dependencies:
       - package: BelfryCore
         product: BelfryCore
+    entitlements:
+      path: App/Belfry.entitlements
+      properties:
+        # guest links https://chat.<domain>/join/<token> and event addresses /events/<link> open
+        # in the app once each chat host serves apple-app-site-association (SERVER-NEEDS.md 5)
+        com.apple.developer.associated-domains:
+          - applinks:chat.belfry.sh
+          - applinks:chat.enspiral.eu
     info:
       path: App/Info.plist
       properties:

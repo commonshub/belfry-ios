@@ -6,6 +6,7 @@ import SwiftUI
 
 struct SignInView: View {
     @EnvironmentObject var model: AppModel
+    var domainHint: String?
     @AppStorage("last-domain") private var domain = ""
     @State private var auth = WebAuth()
     @FocusState private var focused: Bool
@@ -64,6 +65,7 @@ struct SignInView: View {
                 .frame(maxWidth: .infinity)
             }
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { if let h = domainHint { domain = h } }
         }
     }
 

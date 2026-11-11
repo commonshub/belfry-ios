@@ -10,12 +10,15 @@ struct BelfryApp: App {
         WindowGroup {
             SwiftUI.Group {
                 switch model.phase {
-                case .signedOut: SignInView()
+                case .signedOut:
+                    if let invite = model.pendingInvite { JoinScreen(invite: invite) } else { SignInView() }
                 case .ready: RootView()
                 }
             }
             .environmentObject(model)
             .tint(.bronze)
+            .onOpenURL { model.handle(url: $0) }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { act in if let u = act.webpageURL { model.handle(url: u) } }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { model.wake() }
             }

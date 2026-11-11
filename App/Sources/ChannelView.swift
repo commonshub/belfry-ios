@@ -91,14 +91,34 @@ struct ChannelView: View {
                 VStack(spacing: 0) {
                     ChannelLineBar(id: id, topic: topic, open: { pullDown = true }, showAll: { withAnimation { topic = nil } },
                                    review: { details = true })
+                    if let g, g.isEvent, let e = d.eventOfGroup(id) {
+                        Button { model.openEvent = e.coord } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "calendar").foregroundStyle(Color.bronze)
+                                Text(e.title).font(.footnote.weight(.semibold)).lineLimit(1)
+                                Text(d.lineDay(e.start, now: .now)).font(.footnote).foregroundStyle(.secondary)
+                                Spacer()
+                                Text("The event").font(.caption.weight(.semibold)).foregroundStyle(Color.bronze)
+                                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal).padding(.vertical, 7)
+                            .background(.bar)
+                        }
+                        .buttonStyle(.plain)
+                    }
                     if let g, g.isPod, !g.members.contains(model.me), !g.admins.contains(model.me) {
                         PodJoinBar(group: g, asked: g.applications.contains { $0.pubkey == model.me }) { podAsk = true }
                     }
                 }
             }
             .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 0) {
+                if model.unsavedGuest && d.messages(id).contains(where: { $0.pubkey == model.me }) {
+                    SaveAccountCard(compact: true).padding(.horizontal).padding(.vertical, 8).background(.bar)
+                }
                 Composer(group: id, placeholder: "Message \(g.map { $0.isPod ? $0.name : "#" + $0.name } ?? id)", canAnnounce: d.canAdmin(g), topic: topic) { text, attachments, announce in
                     model.post(text, in: id, attachments: attachments, announce: announce, topic: topic)
+                }
                 }
             }
         }
@@ -144,6 +164,10 @@ struct ChannelView: View {
                 openChannel(gid, nil)
                 return .handled
             }
+            if url.scheme == "belfry-user", let pk = url.pathComponents.last, isHex64(pk) {
+                model.openProfile = pk
+                return .handled
+            }
             return .systemAction
         })
     }
@@ -175,7 +199,7 @@ struct ChannelView: View {
         didLaunch = true
         switch model.launch.screen {
         case "thread": pendingThreadLaunch = true
-        case "details": details = true
+        case "details", "members", "todos", "files": details = true
         case "invite": invite = true
         case "pulldown", "proposal": DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { pullDown = true }
         case "menu":
