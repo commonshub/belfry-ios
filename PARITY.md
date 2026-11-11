@@ -91,7 +91,7 @@ and gestures are untested in the real world. XCTest covers the core (BelfryCore)
 | Invite: someone who is here already (members, guests, agents; DM with the link; admit in a closed group I administer; `/channel-guests`), member link + QR, guest link (1 / 50 people; 1 day / 1 week / 1 month) + QR, "My own agent" | done, never run live | Agent switch shown when `POST /agents` gives a limit; off when the limit is reached. |
 | Follow bell (off / as they happen / monthly) | done, never run live | |
 | Pods: join, ask to join (question), admit / decline applications | done | |
-| Proposals: card, status, tally, vote, change status | done | New version: core action only, no screen yet (partial). |
+| Proposals: card, status, tally, vote, change status, new version (author) | done | |
 
 ## E-mail
 

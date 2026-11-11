@@ -94,7 +94,12 @@ public struct ApiEvent: Hashable, Sendable {
     }
 }
 
-public struct SlugCheck: Hashable, Sendable { public let free: Bool; public let suggestion: String; public let problem: String? }
+public struct SlugCheck: Hashable, Sendable {
+    public let free: Bool
+    public let suggestion: String
+    public let problem: String?
+    public init(free: Bool, suggestion: String, problem: String?) { self.free = free; self.suggestion = suggestion; self.problem = problem }
+}
 
 public extension BelfryAPI {
     internal var eventsBase: String { config.apiBase + "/events" }

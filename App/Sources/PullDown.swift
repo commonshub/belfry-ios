@@ -278,6 +278,7 @@ struct TodoRow: View {
 struct ProposalSection: View {
     @EnvironmentObject var model: AppModel
     let p: Proposal
+    @State private var revise = false
     var body: some View {
         let d = model.derive
         let mine = d.myVote(p)
@@ -309,6 +310,48 @@ struct ProposalSection: View {
                         Button(s.label) { model.setStatus(p, s) }
                     }
                 } label: { ActionRow(icon: "flag", title: "Change the status", detail: p.status.label) }
+            }
+            if p.author == model.me {
+                Button { revise = true } label: { ActionRow(icon: "doc.badge.plus", title: "New version", detail: "Version \(p.version + 1)") }
+            }
+        }
+        .sheet(isPresented: $revise) { ReviseProposalSheet(p: p) }
+    }
+}
+
+/// A new version of my proposal: the text replaced, a note in its chat, a new vote while under vote.
+struct ReviseProposalSheet: View {
+    @EnvironmentObject var model: AppModel
+    @Environment(\.dismiss) private var dismiss
+    let p: Proposal
+    @State private var title = ""
+    @State private var summary = ""
+    @State private var text = ""
+    @State private var note = ""
+    @State private var loaded = false
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Title", text: $title).font(.body)
+                    TextField("In one line", text: $summary).font(.body)
+                    TextField("The proposal (Markdown)", text: $text, axis: .vertical).lineLimit(4...14).font(.body)
+                }
+                Section { TextField("What changed (optional)", text: $note, axis: .vertical).lineLimit(1...4).font(.body) } footer: { Text(p.status == .voting ? "A new vote opens for version \(p.version + 1)." : "Everyone in its chat sees the new version.") }
+            }
+            .navigationTitle("Version \(p.version + 1)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    BusyButton("Publish") { model.reviseProposal(p, title: title.jsTrim(), summary: summary.jsTrim(), text: text.jsTrim(), note: note); dismiss() }
+                        .disabled(title.jsTrim().isEmpty)
+                }
+            }
+            .onAppear {
+                guard !loaded else { return }
+                loaded = true
+                title = p.title; summary = p.summary; text = p.text
             }
         }
     }
