@@ -30,6 +30,11 @@ final class AppModel: ObservableObject {
     /// A co-host link used by someone new: once their e-mail is proven, the link is used again.
     @Published var coHostToken: String?
     var demoFollows = [String: String]()
+    /// Push notifications on this phone (AppModel+Push).
+    @Published var pushState: PushState = .unknown
+    /// A tapped notification to open (a channel at a message, or Messages).
+    @Published var pushOpen: PushOpen?
+    var demoNotifications = NotificationSettings()
     /// Events read through the belfry's API, by link (a minute).
     var remoteEvents = [String: (at: Date, event: ApiEvent)]()
     /// Text to put in a channel's composer (an event's URL after making it from the channel's ＋).
@@ -191,6 +196,7 @@ final class AppModel: ObservableObject {
         }
         e.start()
         updateAddress()
+        Task { await self.checkPush() }
     }
 
     /// belfry.json again (ETag, no-cache; SPEC 19.15): at start, after an admin / agent change, and

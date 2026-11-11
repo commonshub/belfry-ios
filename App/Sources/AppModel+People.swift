@@ -224,6 +224,7 @@ extension AppModel {
 
     /// Sign out: end this device's session on the belfry (best effort, 3 s), then wipe the phone.
     func signOutEverywhere() async {
+        await removePushDevice()
         if let s = session, !s.demo, let pk = mySessionKey {
             let api = self.api
             let f = Flag()

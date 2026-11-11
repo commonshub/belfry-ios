@@ -91,6 +91,7 @@ struct ChannelView: View {
                 VStack(spacing: 0) {
                     ChannelLineBar(id: id, topic: topic, open: { pullDown = true }, showAll: { withAnimation { topic = nil } },
                                    review: { details = true })
+                    if model.offerPush { PushOffer() }
                     if let g, g.isEvent, let e = d.eventOfGroup(id) {
                         Button { model.openEvent = e.coord } label: {
                             HStack(spacing: 8) {

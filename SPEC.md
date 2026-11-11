@@ -932,3 +932,32 @@ New events are **Belfry events**; the older `ws-` ones above are still read and 
   declined / can't go (includes hosting); Your events (drawer) = Belfry events I host or hold /
   ask a place at, ending at most 30 days ago.
 
+
+### 19.19 Push notifications (collective-belfry `docs/push.md`, 2026-11-11)
+
+The contract is `docs/push.md` in collective-belfry (server, gateway and both apps build against
+it); this section only says what a client does. (Added by the iOS app; Android should carry the
+same section.)
+
+- **Device key.** The device makes a random 32-byte key `K` per belfry and keeps it where its
+  notification code can read it (iOS: the keychain group shared with the Notification Service
+  Extension). `K` is used directly as the NIP-44 v2 conversation key (no ECDH).
+- **Register** on every start once the person allowed notifications (never ask at launch: ask
+  where it explains itself, e.g. a "Get notified" row the first time a channel opens, or Me →
+  Notifications): `POST <api>/push/devices` (NIP-98)
+  `{"add":{"platform":"apns"|"fcm","token":<hex APNs token | FCM token>,"env":"production"|"sandbox",
+  "key":<base64 K>,"app":"belfry-ios"|"belfry-android","name":<device model>}}` → `{"id"}`.
+  **Sign-out**: `{"remove":<token>}` before the session is revoked; forget `K`.
+- **Payload.** APNs: `aps.alert` is a placeholder, `mutable-content: 1`, `aps.thread-id` =
+  collapse, custom key `b` = base64 NIP-44 v2 ciphertext. FCM: data-only, `data.b`. Plaintext:
+  `{"v":1,"domain","type":"dm"|"mention"|"reply"|"announcement"|"pin"|"message","title","body",
+  "channel"?,"event"?,"from"?,"url"}`; a client shows `title` and `body` (≤ 180), groups by
+  `dm` / the channel, and ignores a payload whose `v` is not 1, whose `domain` is not the belfry
+  the key belongs to, or that does not open (the placeholder stays).
+- **Tap.** Only when `url`'s host is `chat.<domain>` of the signed-in belfry: `#/c/<id>/m/<event>`
+  opens the channel at the message, `#/c/<id>` the channel, `#/dm` Messages; anything else opens
+  the app's home. `url` is never shown.
+- **Settings.** `POST <api>/notifications` `{}` reads, `{"set":{…}}` merges: `dms`, `mentions`,
+  `announcements`, `pins` (booleans, default true) and `channels` = {group id: `all` | `default`
+  | `mentions` | `off`} (absent = `default`). Me → Notifications shows the four switches and each
+  of my channels' level; a channel's bell shows its push level next to the e-mail follow.

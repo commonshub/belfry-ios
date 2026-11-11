@@ -95,6 +95,13 @@ profile, editprofile, me, members, todos, files, events, eventhost, eventform). 
 
 - Bundle id `sh.belfry.app`, redirect `sh.belfry.app://connect`, client_id `belfry-ios`, client
   tag `["client","belfry-ios"]`.
+- Push (collective-belfry `docs/push.md`, SPEC 19.19): target `NotificationService` (bundle
+  `sh.belfry.app.notifications`, App/NotificationService) decrypts `b` with the device key K
+  (BelfryCore `Push.open`, `PushKeyStore`); K lives in the keychain group
+  `$(AppIdentifierPrefix)sh.belfry.app.shared` (Info.plist `BelfryKeychainGroup`; falls back to
+  the app's own group on an unsigned build); App Group `group.sh.belfry.app`; `aps-environment`
+  from `APS_ENVIRONMENT` (development / production). `AppDelegate` (in AppModel+Push) gets the
+  token and the taps. The portal set-up Xavier must do is in SERVER-NEEDS 3.
 - Universal links: `applinks:chat.belfry.sh`, `applinks:chat.enspiral.eu` (project.yml
   entitlement) for `/join/<token>` and `/events/<link>`; the chat hosts must serve
   apple-app-site-association (SERVER-NEEDS 5). A guest's join session key lives in the Keychain

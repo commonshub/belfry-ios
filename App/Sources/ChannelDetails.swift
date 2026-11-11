@@ -146,6 +146,7 @@ struct FollowBell: View {
             }
             .disabled(busy || !loaded)
             if let error { Text(error).font(.caption).foregroundStyle(.red) }
+            if model.pushState == .on { PushLevelPicker(id: id) }
         }
         .task {
             state = await model.follow(id)

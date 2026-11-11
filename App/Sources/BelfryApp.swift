@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct BelfryApp: App {
     @StateObject private var model = AppModel()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -18,9 +19,16 @@ struct BelfryApp: App {
             .environmentObject(model)
             .tint(.bronze)
             .onOpenURL { model.handle(url: $0) }
+            .onAppear {
+                AppDelegate.model = model
+                if let t = AppDelegate.pendingTap { AppDelegate.pendingTap = nil; model.openPush(t) }
+            }
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { act in if let u = act.webpageURL { model.handle(url: u) } }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { model.wake() }
+                if phase == .active {
+                    model.wake()
+                    if model.phase == .ready { Task { await model.checkPush() } }
+                }
             }
         }
     }

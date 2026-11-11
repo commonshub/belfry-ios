@@ -18,6 +18,7 @@ struct RootView: View {
     @State private var query = ""
     @State private var newChannel = false
     @State private var account = false
+    @State private var notifications = false
     @State private var focus: SearchTarget?
     @State private var visibility = NavigationSplitViewVisibility.automatic
     @State private var path = NavigationPath()
@@ -67,6 +68,16 @@ struct RootView: View {
         .sheet(item: Binding(get: { model.pendingInvite }, set: { if $0 == nil { model.pendingInvite = nil } })) { inv in
             JoinWithAccountSheet(invite: inv)
         }
+        .onChange(of: model.pushOpen) { _, p in
+            guard let p else { return }
+            model.pushOpen = nil
+            if let id = p.channel {
+                focus = p.message.map { SearchTarget(channel: id, message: $0) }
+                if selection == .channel(id) { path = NavigationPath() } else { selection = .channel(id) }
+            } else {
+                selection = .messages
+            }
+        }
         .onChange(of: model.joinedChannel) { _, id in
             guard let id else { return }
             model.joinedChannel = nil
@@ -78,6 +89,7 @@ struct RootView: View {
         .onAppear(perform: applyLaunchScreen)
         .sheet(isPresented: $newChannel) { NewChannelSheet { id in selection = .channel(id) } }
         .sheet(isPresented: $account) { AccountSheet() }
+        .sheet(isPresented: $notifications) { NavigationStack { NotificationsView() } }
     }
 
     private var sidebar: some View {
@@ -158,6 +170,9 @@ struct RootView: View {
         case "profile":
             selection = .channel(generalId)
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { model.openProfile = Demo.signer("ana").pubkey }
+        case "notifications":
+            selection = .channel(generalId)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { notifications = true }
         case "editprofile", "me":
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { account = true }
         case "members", "todos", "files": selection = .channel(generalId)

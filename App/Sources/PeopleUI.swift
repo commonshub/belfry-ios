@@ -351,6 +351,9 @@ struct AccountSheet: View {
                     }
                 }
                 Section {
+                    NavigationLink { NotificationsView() } label: {
+                        ActionRow(icon: "bell", title: "Notifications", detail: model.pushState == .on ? "On" : model.pushState == .denied ? "Off in Settings" : "Turn on")
+                    }
                     NavigationLink { DevicesView() } label: { ActionRow(icon: "iphone", title: "Signed-in devices") }
                     if !queued.isEmpty {
                         ActionRow(icon: "tray.and.arrow.up", title: "\(queued.count) waiting to be sent",

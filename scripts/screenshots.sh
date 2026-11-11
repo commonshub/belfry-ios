@@ -74,6 +74,7 @@ shot 28-files files light
 shot 31-all-events events light
 shot 32-event-host eventhost light
 shot 33-event-form eventform light
+shot 34-notifications notifications light
 shot 11-feed-dark feed dark
 shot 12-channels-dark channels dark
 shot 30-join join light

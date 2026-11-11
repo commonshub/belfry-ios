@@ -49,18 +49,32 @@ have no `api.base` and no `api.channel_invites`, and their `api.*` entries point
 Publishing `api.base` (and `api.channel_invites`) removes the guess. NIP-98: `holder_invites.authenticate`
 already accepts both the `pass.` and `belfry.<domain>/api/v1` URLs.
 
-## 3. Push notifications (later; needed for a real phone app)
+## 3. Push notifications — the app side is built against collective-belfry `docs/push.md`
 
-Nothing wakes the app when a message arrives. Proposal:
+The protocol is `docs/push.md` (gateway at push.belfry.sh, `/api/v1/push/devices`,
+`/api/v1/notifications`); this app does not change it. What Xavier must do in the Apple
+developer portal before TestFlight can carry push:
 
-- The app registers its APNs device token: `POST <api base>/me/push` (NIP-98)
-  `{"platform":"apns","token":"…","app":"sh.belfry.app","events":["mention","dm","mail","reply"]}`;
-  `DELETE` on sign-out.
-- The belfry already knows mentions (mentions.py) and mail (mailfront); it would send a
-  content-free push ("New message in #general", or just a badge) through APNs with the app's key
-  (an APNs auth key `.p8`, team id, key id, kept as belfry secrets), never the message text
-  (end-to-end privacy for DMs).
-- Needs the APNs key from Xavier's Apple developer account; ask before adding it.
+1. App ID `sh.belfry.app`: enable **Push Notifications** and **App Groups** (group
+   `group.sh.belfry.app`).
+2. A second App ID **`sh.belfry.app.notifications`** (the Notification Service Extension), with
+   **App Groups** (`group.sh.belfry.app`).
+3. Both share the keychain access group `<TEAM_ID>.sh.belfry.app.shared` (declared in the
+   entitlements; no portal switch needed beyond the same team).
+4. An **APNs auth key** (.p8, Keys → Apple Push Notifications service) for the gateway: its key
+   id, the team id and the .p8 go into the gateway's secrets (`apns_key.p8`, `APNS_KEY_ID`,
+   `APNS_TEAM_ID`), never into this repo.
+5. With automatic signing (`-allowProvisioningUpdates` and the App Store Connect API key), the
+   profiles for both targets are made by the TestFlight job; the entitlements are
+   `aps-environment` = development (Debug) / production (Release), the App Group and the keychain
+   group (project.yml). CI's simulator build is unsigned, so these only matter for TestFlight.
+
+Questions on the contract, raised here rather than changed:
+- `env` for a TestFlight build is `production` (TestFlight uses the production APNs); Debug
+  builds from Xcode use `sandbox`. The app sends that; the gateway must pick the APNs host by it.
+- The DM payload has `title` = the belfry's name: fine for one community per phone; with
+  several communities later, the extension shows it as is.
+- No badge count is in the payload; the app sets none.
 
 ## 4. Session lifetime and revocation (question)
 
