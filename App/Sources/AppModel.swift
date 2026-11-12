@@ -79,9 +79,11 @@ final class AppModel: ObservableObject {
             pendingInvite = nil
             startDemo()
         } else if launch.signin == "code" {
+            pendingInvite = nil
             pendingCode = PendingCode(address: "maya@riverside.example", to: "m\u{2022}\u{2022}\u{2022}@example.org")
         } else if launch.signin != nil {
             // a screenshot of screen 1
+            pendingInvite = nil
         } else if let s = Keychain.load() {
             open(s)
         } else {
