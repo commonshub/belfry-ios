@@ -31,16 +31,16 @@ extension AppModel {
         Task { await runOpening(invite) }
     }
 
-    private func sleep(_ ms: UInt64) async { try? await Task.sleep(nanoseconds: ms * 1_000_000) }
+    private func pause(_ ms: UInt64) async { try? await Task.sleep(nanoseconds: ms * 1_000_000) }
 
     private func runOpening(_ invite: PendingInvite) async {
         if invite.domain == "demo.belfry.sh" { // the demo: what the belfry would answer, after a moment
-            await sleep(300)
+            await pause(300)
             opening = Opening(channel: generalId, name: "general")
-            await sleep(300)
+            await pause(300)
             pendingInvite = nil
             startDemo(reader: true)
-            await sleep(600)
+            await pause(600)
             opening = nil
             openingToken = nil
             return
@@ -70,7 +70,7 @@ extension AppModel {
             if j.emailNeeded { coHostToken = invite.token }
             // until the relay let this key in and sent what it has (or said no), at most 10 s more
             let deadline = Date().addingTimeInterval(10)
-            while Date() < deadline, engine?.access == .unknown { await sleep(200) }
+            while Date() < deadline, engine?.access == .unknown { await pause(200) }
         } catch let e as ApiError {
             let problem: InviteProblem
             switch await info.value {
@@ -126,7 +126,7 @@ extension AppModel {
 
     /// Ask for the code: it goes by e-mail to EMAIL. NAME is sent in guest mode (none yet).
     func sendJoinCode(email: String, name: String?) async -> GuestJoinFailure? {
-        if isDemo { await sleep(400); return nil } // demo: no mail; the code is 123456
+        if isDemo { await pause(400); return nil } // demo: no mail; the code is 123456
         do { try await api.guestSave(email: email, name: name); return nil }
         catch let f as GuestJoinFailure { return f } catch { return GuestJoinFailure(.failed) }
     }
@@ -134,9 +134,9 @@ extension AppModel {
     /// The code from the e-mail: the account is saved under that address (and name).
     func verifyJoinCode(email: String, code: String, name: String?) async -> GuestJoinFailure? {
         if isDemo {
-            await sleep(400)
-            if email.jsTrim().lowercased() == "taken@example.org" { return GuestJoinFailure(.taken, moved: true) }
-            if code != "123456" { return GuestJoinFailure(.wrongCode) }
+            await pause(400)
+            if email.jsTrim().lowercased() == "taken@example.org" { return GuestJoinFailure(.taken, moved: true, nip05: "taken@demo.belfry.sh") }
+            if code != "123456" { return GuestJoinFailure(.wrongCode, triesLeft: 4) }
             if guestReading, let name, let e = engine {
                 // what the belfry would publish: the 9000 with the name, then the label
                 let gk = Demo.signer("groups")
@@ -174,14 +174,19 @@ extension AppModel {
 
     /// The address proven in guest mode has an account here: this guest session goes (the belfry
     /// closed it itself when MOVED), the person signs in with the address, and CHANNEL opens after.
-    func signInInstead(channel: String, moved: Bool) async {
+    /// The native sign-in's address: the belfry's `nip05` for that account, else the typed e-mail
+    /// when it is name@<domain>, else empty with a fixed hint (`signInNote`).
+    func signInInstead(channel: String, moved: Bool, nip05: String? = nil, typed: String = "") async {
         if isDemo {
             signOut()
             return
         }
         if !moved, let pk = mySessionKey { _ = await endSession(pk) }
         let domain = config.domain
+        let address = GuestJoinForm.signInAddress(nip05: nip05, typed: typed, domain: domain)
         signOut()
+        UserDefaults.standard.set(address ?? "", forKey: "last-address")
+        signInNote = address == nil ? "Sign in with your address here (name@\(domain)), or with the browser using the e-mail you typed." : nil
         if !channel.isEmpty { UserDefaults.standard.set(channel, forKey: AppModel.openAfterSignInKey) }
         pendingInvite = nil
         inviteSignInFirst = false

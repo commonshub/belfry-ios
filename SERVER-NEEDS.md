@@ -148,3 +148,20 @@ handles them), so nothing breaks. Another community's chat host needs the same f
 - `POST /admins` returning the new admin list would save the belfry.json re-read after the admin
   switch (Android SERVER-NEEDS 6).
 - Push notifications (section 3) are still the main missing piece for a phone app.
+
+## 7. Guest mode (docs/guests.md, 2026-11-12) — built in the app, not run live
+
+Nothing blocks; notes for the belfry:
+
+- **Telling an older belfry apart**: the app sends `{}` to `/channel-invites/<token>/join`. A
+  belfry from before guest mode answers 422 `name_needed`; the app then says "This belfry is
+  being updated. Try again in a few minutes." and does not fall back to asking a name. A
+  capability flag in belfry.json (e.g. `guests.reading: true`) would let a client pick the flow.
+- **The `saved` / `member` label** is read per group (`h` of the 1985), as the web does. If the
+  belfry ever labels a joined guest in one channel only while their reading 9000s stand in
+  others, those others keep hiding them until a 9000 without `reading` lands there too.
+- **Read-only is client-side** (as the doc says): a modified client could post as a nameless
+  guest. A relay-side refusal of writes from keys whose latest 9000 carries `reading` would make
+  "reading" true for everyone.
+- `/whois` is allowed while reading (it is a read sent as a POST). Push registration
+  (`/push/devices`) waits until the guest has joined.

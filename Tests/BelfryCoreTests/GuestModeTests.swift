@@ -180,7 +180,7 @@ final class GuestModeTests: XCTestCase {
         XCTAssertTrue(joined)
         // refusals by code, never the server's text
         for (status, json, want, moved) in [
-            (422, #"{"error":"wrong_code","message":"2 tries left"}"#, GuestJoinError.wrongCode, false),
+            (422, #"{"error":"wrong_code","message":"x"}"#, GuestJoinError.wrongCode, false),
             (410, #"{"error":"expired"}"#, .expired, false),
             (422, #"{"error":"name_needed"}"#, .nameNeeded, false),
             (409, #"{"error":"not_guest"}"#, .notGuest, false),
@@ -193,10 +193,50 @@ final class GuestModeTests: XCTestCase {
             catch let f as GuestJoinFailure { XCTAssertEqual(f.error, want); XCTAssertEqual(f.moved, moved) }
         }
         XCTAssertEqual(GuestJoinError.taken.message, "This address already has an account here.")
+        // collective-belfry d2b4c52: tries_left on a wrong code, the account's nip05 on taken
+        StubBelfry.enqueue(422, #"{"error":"wrong_code","tries_left":2}"#)
+        do { try await api.guestVerify(email: "ana@example.org", code: "000000"); XCTFail() }
+        catch let f as GuestJoinFailure { XCTAssertEqual(f.triesLeft, 2); XCTAssertEqual(f.display, "That code is not right. 2 tries left.") }
+        XCTAssertEqual(GuestJoinFailure(.wrongCode, triesLeft: 1).display, "That code is not right. 1 try left.")
+        XCTAssertEqual(GuestJoinFailure(.wrongCode, triesLeft: 0).display, "That code is not right. Ask for a new one.")
+        XCTAssertEqual(GuestJoinFailure(.wrongCode).display, GuestJoinError.wrongCode.message)
+        StubBelfry.enqueue(409, #"{"error":"taken","moved":true,"nip05":"ana@example.org"}"#)
+        do { try await api.guestVerify(email: "ana@mail.example", code: "000000"); XCTFail() }
+        catch let f as GuestJoinFailure { XCTAssertEqual(f.error, .taken); XCTAssertTrue(f.moved); XCTAssertEqual(f.nip05, "ana@example.org") }
         // anything else that writes is refused on the device and asks to join
         do { _ = try await api.createGuestLink(channel: "g"); XCTFail() }
         catch let e as ApiError { XCTAssertEqual(e.code, "guest_mode") }
         XCTAssertEqual(asked, 1)
+    }
+
+    func testSignInAddress() {
+        XCTAssertEqual(GuestJoinForm.signInAddress(nip05: "Ana@Example.org", typed: "ana@mail.example", domain: "example.org"), "ana@example.org")
+        XCTAssertEqual(GuestJoinForm.signInAddress(nip05: nil, typed: " ana@example.org ", domain: "example.org"), "ana@example.org")
+        XCTAssertNil(GuestJoinForm.signInAddress(nip05: "ana@other.org", typed: "ana@gmail.com", domain: "example.org"))
+        XCTAssertNil(GuestJoinForm.signInAddress(nip05: "a b@example.org", typed: "", domain: "example.org"))
+    }
+
+    /// vectors/guestmode.json (Android's, hand-written from the web's model.ts at b2e968b).
+    func testVectors() throws {
+        for c in try vector("guestmode").list("cases") {
+            let name = c.str("name") ?? ""
+            let me = c.str("me") ?? ""
+            let d = Derive(events: try events(c["events"]), context: WorldContext(me: me))
+            let want = c.dict("expect")
+            for (id, v) in want.dict("channels") {
+                guard let w = v as? [String: Any] else { continue }
+                let g = try XCTUnwrap(d.group(id), name)
+                XCTAssertEqual(g.reading, Set(w.strs("reading")), name)
+                XCTAssertEqual(g.members, Set(w.strs("members")), name)
+                let lines = d.guestJoins(id).map { ["pubkey": $0.pubkey, "unsaved": $0.unsaved] as [String: AnyHashable] }
+                let wantLines = w.list("join_lines").map { ["pubkey": $0["pubkey"] as? String ?? "", "unsaved": $0["unsaved"] as? Bool ?? false] as [String: AnyHashable] }
+                XCTAssertEqual(lines, wantLines, name)
+                XCTAssertEqual(Set(d.recentlyActive(id, now: c.int("now") ?? 0).map(\.pubkey)), Set(w.strs("active")), name)
+                XCTAssertEqual(d.readingCount(id), w.int("reading_count"), name)
+            }
+            XCTAssertEqual(d.onlyReading, Set(want.strs("reading_only")), name)
+            XCTAssertEqual(d.amGuest, want["am_guest"] as? Bool, name)
+        }
     }
 
     func testForm() {

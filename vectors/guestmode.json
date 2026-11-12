@@ -1,0 +1,811 @@
+{
+  "about": "Guest mode (SPEC 19.26): a key is reading in a channel while its latest kind 9000 there carries [\"reading\",\"1\"] and no later 9000 without it, belfry/guest label saved|member or 9001 came. Reading keys (except me) are not members (also when the relay's 39002 lists them), have no join line, are not active; members tab counts them.",
+  "generated_by": "hand-written from the web chat's model.ts at village-app b2e968b (groups(), guestJoins(), recentlyActive())",
+  "cases": [
+    {
+      "name": "others' reading guests are left out; joined, saved, removed and held guests are not reading",
+      "me": "1111111111111111111111111111111111111111111111111111111111111111",
+      "now": 500,
+      "events": [
+        {
+          "id": "f1fc9a0dcd5f80b55d772f4e1c223f90842dd4cd8acdd7df3d4593782b134fba",
+          "pubkey": "8888888888888888888888888888888888888888888888888888888888888888",
+          "created_at": 100,
+          "kind": 39000,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "name",
+              "general"
+            ],
+            [
+              "about",
+              "Everyone"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "c5a1ac82778ac863d11eb20343a3f91f9074e48254737c349489ab2c19e3b04d",
+          "pubkey": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+          "created_at": 110,
+          "kind": 9,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "hello",
+          "sig": ""
+        },
+        {
+          "id": "a2fa8e6526822b81f076401207e61f93272252a5d186565c71e822f628b4d3a9",
+          "pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+          "created_at": 111,
+          "kind": 9,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "hi",
+          "sig": ""
+        },
+        {
+          "id": "3879743f6320fbec2e320b32c29ddc0d7e4d1cce549e3f26a0c40f4ac5c4d9e2",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 200,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "1cf5c17a605db9296f5ef356c5195cba63c68d195324bfe72941990b62df614e",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 201,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "eece2ad4e71a6c136c1f317de86c13247a8eb926f03c670dd480d64770f004af",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 202,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "1c1faf4e504acabe889dbd6e402fbf5983cf631b9fa85d3f3899cc168a6ea5d6",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 203,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "bfd3b9c8aaa8c662834131447f311c887179eecf9c6a76427f10d26657d285be",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 204,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "1111111111111111111111111111111111111111111111111111111111111111"
+            ],
+            [
+              "name",
+              "Frank"
+            ],
+            [
+              "unsaved",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "6a3b148d1cd2f38e358eb95c41bff61d99fef24ba7ea4b6c0024a6fc3b7981ab",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 300,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "name",
+              "Carol"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "fc67a82b26b40cbf8987ab89d5790b4de8f8aa6132fb2b493086358c911ff2b9",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 301,
+          "kind": 1985,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "L",
+              "belfry/guest"
+            ],
+            [
+              "l",
+              "saved",
+              "belfry/guest"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "fa5396ef8265560c081c5989d5ba8935c3c9a686dfd1ed01ec7c9d6dc95f21c0",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 302,
+          "kind": 9001,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "c973069e85cc83ff0861307e08fbc994bbd35abd46bfb2cad4d2d4ac2e355f9a",
+          "pubkey": "8888888888888888888888888888888888888888888888888888888888888888",
+          "created_at": 400,
+          "kind": 39002,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "p",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "p",
+              "1111111111111111111111111111111111111111111111111111111111111111"
+            ],
+            [
+              "p",
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0"
+            ],
+            [
+              "p",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "d5e7e3d9a85f84941eb4b349bfa07f274d5df12d88934ae967392b96618325a3",
+          "pubkey": "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+          "created_at": 405,
+          "kind": 7,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "c5a1ac82778ac863d11eb20343a3f91f9074e48254737c349489ab2c19e3b04d"
+            ],
+            [
+              "p",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ]
+          ],
+          "content": "👍",
+          "sig": ""
+        }
+      ],
+      "expect": {
+        "channels": {
+          "general": {
+            "reading": [
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"
+            ],
+            "members": [
+              "1111111111111111111111111111111111111111111111111111111111111111",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0"
+            ],
+            "join_lines": [
+              {
+                "pubkey": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+                "unsaved": true
+              },
+              {
+                "pubkey": "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+                "unsaved": false
+              }
+            ],
+            "active": [
+              "1111111111111111111111111111111111111111111111111111111111111111",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            "reading_count": 1
+          }
+        },
+        "reading_only": [
+          "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"
+        ],
+        "am_guest": false
+      }
+    },
+    {
+      "name": "I am the reading guest: I stay in my own channel's members (not active: reading leaves no trace), and I am a guest",
+      "me": "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+      "now": 500,
+      "events": [
+        {
+          "id": "f1fc9a0dcd5f80b55d772f4e1c223f90842dd4cd8acdd7df3d4593782b134fba",
+          "pubkey": "8888888888888888888888888888888888888888888888888888888888888888",
+          "created_at": 100,
+          "kind": 39000,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "name",
+              "general"
+            ],
+            [
+              "about",
+              "Everyone"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "c5a1ac82778ac863d11eb20343a3f91f9074e48254737c349489ab2c19e3b04d",
+          "pubkey": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+          "created_at": 110,
+          "kind": 9,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "hello",
+          "sig": ""
+        },
+        {
+          "id": "a2fa8e6526822b81f076401207e61f93272252a5d186565c71e822f628b4d3a9",
+          "pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+          "created_at": 111,
+          "kind": 9,
+          "tags": [
+            [
+              "h",
+              "general"
+            ]
+          ],
+          "content": "hi",
+          "sig": ""
+        },
+        {
+          "id": "3879743f6320fbec2e320b32c29ddc0d7e4d1cce549e3f26a0c40f4ac5c4d9e2",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 200,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "1cf5c17a605db9296f5ef356c5195cba63c68d195324bfe72941990b62df614e",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 201,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "eece2ad4e71a6c136c1f317de86c13247a8eb926f03c670dd480d64770f004af",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 202,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "1c1faf4e504acabe889dbd6e402fbf5983cf631b9fa85d3f3899cc168a6ea5d6",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 203,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "unsaved",
+              "1"
+            ],
+            [
+              "reading",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "bfd3b9c8aaa8c662834131447f311c887179eecf9c6a76427f10d26657d285be",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 204,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "1111111111111111111111111111111111111111111111111111111111111111"
+            ],
+            [
+              "name",
+              "Frank"
+            ],
+            [
+              "unsaved",
+              "1"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "6a3b148d1cd2f38e358eb95c41bff61d99fef24ba7ea4b6c0024a6fc3b7981ab",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 300,
+          "kind": 9000,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "member"
+            ],
+            [
+              "guest",
+              "2026-12-12"
+            ],
+            [
+              "invited-by",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "name",
+              "Carol"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "fc67a82b26b40cbf8987ab89d5790b4de8f8aa6132fb2b493086358c911ff2b9",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 301,
+          "kind": 1985,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "L",
+              "belfry/guest"
+            ],
+            [
+              "l",
+              "saved",
+              "belfry/guest"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "fa5396ef8265560c081c5989d5ba8935c3c9a686dfd1ed01ec7c9d6dc95f21c0",
+          "pubkey": "9999999999999999999999999999999999999999999999999999999999999999",
+          "created_at": 302,
+          "kind": 9001,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "p",
+              "e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "c973069e85cc83ff0861307e08fbc994bbd35abd46bfb2cad4d2d4ac2e355f9a",
+          "pubkey": "8888888888888888888888888888888888888888888888888888888888888888",
+          "created_at": 400,
+          "kind": 39002,
+          "tags": [
+            [
+              "d",
+              "general"
+            ],
+            [
+              "p",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            [
+              "p",
+              "1111111111111111111111111111111111111111111111111111111111111111"
+            ],
+            [
+              "p",
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"
+            ],
+            [
+              "p",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"
+            ],
+            [
+              "p",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0"
+            ],
+            [
+              "p",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0"
+            ]
+          ],
+          "content": "",
+          "sig": ""
+        },
+        {
+          "id": "d5e7e3d9a85f84941eb4b349bfa07f274d5df12d88934ae967392b96618325a3",
+          "pubkey": "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+          "created_at": 405,
+          "kind": 7,
+          "tags": [
+            [
+              "h",
+              "general"
+            ],
+            [
+              "e",
+              "c5a1ac82778ac863d11eb20343a3f91f9074e48254737c349489ab2c19e3b04d"
+            ],
+            [
+              "p",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ]
+          ],
+          "content": "👍",
+          "sig": ""
+        }
+      ],
+      "expect": {
+        "channels": {
+          "general": {
+            "reading": [
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"
+            ],
+            "members": [
+              "1111111111111111111111111111111111111111111111111111111111111111",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+              "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0",
+              "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+              "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0",
+              "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0"
+            ],
+            "join_lines": [
+              {
+                "pubkey": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+                "unsaved": true
+              },
+              {
+                "pubkey": "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0",
+                "unsaved": false
+              }
+            ],
+            "active": [
+              "1111111111111111111111111111111111111111111111111111111111111111",
+              "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+            ],
+            "reading_count": 0
+          }
+        },
+        "reading_only": [],
+        "am_guest": true
+      }
+    }
+  ]
+}

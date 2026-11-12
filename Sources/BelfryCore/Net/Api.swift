@@ -315,7 +315,10 @@ public struct BelfryAPI: Sendable {
         do { a = try await signed(base + path, method: "POST", json: body) } catch let e as ApiError {
             throw GuestJoinFailure(e.code == "network" ? .offline : .failed)
         }
-        guard a.ok else { throw GuestJoinFailure(GuestJoinError(code: a.error), moved: a.body?["moved"] as? Bool == true) }
+        guard a.ok else {
+            throw GuestJoinFailure(GuestJoinError(code: a.error), moved: a.body?["moved"] as? Bool == true,
+                                   triesLeft: BelfryAPI.int(a.body?["tries_left"]), nip05: (a.body?["nip05"] as? String).map { $0.sliceUnits(120) })
+        }
         return a.body ?? [:]
     }
 

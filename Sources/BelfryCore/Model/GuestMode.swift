@@ -89,8 +89,22 @@ public enum GuestJoinError: String, Error, CaseIterable, Sendable {
 public struct GuestJoinFailure: Error, Equatable, LocalizedError {
     public let error: GuestJoinError
     public let moved: Bool
-    public init(_ error: GuestJoinError, moved: Bool = false) { self.error = error; self.moved = moved }
-    public var errorDescription: String? { error.message }
+    /// `wrong_code`: how many tries the code has left (collective-belfry d2b4c52).
+    public let triesLeft: Int?
+    /// `taken`: that account's address here (`name@domain`), when the belfry could read it.
+    public let nip05: String?
+    public init(_ error: GuestJoinError, moved: Bool = false, triesLeft: Int? = nil, nip05: String? = nil) {
+        self.error = error; self.moved = moved; self.triesLeft = triesLeft; self.nip05 = nip05
+    }
+    public var errorDescription: String? { display }
+
+    /// The text to show: a wrong code says how many tries are left (as the native sign-in does).
+    public var display: String {
+        guard error == .wrongCode, let n = triesLeft else { return error.message }
+        if n <= 0 { return "That code is not right. Ask for a new one." }
+        if n == 1 { return "That code is not right. 1 try left." }
+        return "That code is not right. \(n) tries left."
+    }
 }
 
 public enum GuestJoinForm {
@@ -101,6 +115,19 @@ public enum GuestJoinForm {
 
     /// The e-mail field is worth sending (web: /^\S+@\S+\.\S+$/ on the trimmed text).
     public static func looksLikeEmail(_ s: String) -> Bool { Rx("^\\S+@\\S+\\.\\S+$").test(s.jsTrim()) }
+
+    /// The address to put in the native sign-in after "Sign in instead" (SPEC 19.26): the
+    /// belfry's `nip05` for that account when it is name@DOMAIN, else the typed e-mail when it is
+    /// such an address, else nil (the field stays empty, with a fixed hint).
+    public static func signInAddress(nip05: String?, typed: String, domain: String) -> String? {
+        let d = domain.lowercased()
+        for c in [nip05, typed] {
+            guard let a = c?.jsTrim().lowercased(), !a.isEmpty else { continue }
+            let parts = a.split(separator: "@", omittingEmptySubsequences: false)
+            if parts.count == 2, parts[1] == Substring(d), Rx("^[a-z0-9._-]{1,64}$").test(String(parts[0])) { return a }
+        }
+        return nil
+    }
 
     /// What the Join sheet's first step needs before Continue unlocks.
     public static func canContinue(name: String, email: String, askName: Bool) -> Bool {

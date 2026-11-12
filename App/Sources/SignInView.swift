@@ -71,6 +71,9 @@ private struct AddressScreen: View {
                         if model.launch.signin == nil { offerBrowser = false }
                     }
             }
+            if let note = model.signInNote {
+                Text(note).font(.callout).foregroundStyle(.secondary)
+            }
             if let e = error ?? model.signInError {
                 Label(e, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)

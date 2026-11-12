@@ -40,6 +40,7 @@ extension AppModel {
             Keychain.save(s)
             pendingCode = nil
             signInError = nil
+            signInNote = nil
             open(s, config: opened.config)
             return nil
         } catch let e as SessionError {

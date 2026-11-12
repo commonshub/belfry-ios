@@ -9,7 +9,7 @@ don't guess. The Android app (opencollective/belfry-android) is a second reading
 
 `vectors/` is the contract shared with Android: keep both repos' files identical (copy, don't
 edit one side). SPEC.md differs from Android's only in the paragraph that opens section 19 and the (iOS) notes
-that end 19.19 and 19.20 (Android's 19.21 and 19.22 are not ported yet).
+that end 19.19, 19.20 and 19.26 (Android's 19.21 to 19.25 are not ported yet). `vectors/guestmode.json` is Android's.
 
 ## Layout
 
@@ -52,7 +52,8 @@ that end 19.19 and 19.20 (Android's 19.21 and 19.22 are not ported yet).
   mail reply, `Composer` with @ and # pickers and the ＋ menu, `ThreadView` + `ChannelSearch`),
   `ChannelDetails` (tabs + invite sheet), `PeopleUI` (profile, edit, Me, devices, save account),
   `SignInView` (address → six code boxes; the browser as a second row; `AppModel+SignIn`),
-  `JoinUI` (guest links), `EventsUI`, `Kit` (BusyButton, ActionRow, PodShape, ChannelGlyph,
+  `JoinUI` (guest links signed in), `GuestUI` + `AppModel+Guest` (guest mode, SPEC 19.26: the
+  loading screen, the guest bar, the Join sheet), `EventsUI`, `Kit` (BusyButton, ActionRow, PodShape, ChannelGlyph,
   Chip, `openChannel` environment). `project.yml` is the XcodeGen spec; the `.xcodeproj`,
   `App/Info.plist` and `App/Belfry.entitlements` are generated, not committed.
 - `SERVER-NEEDS.md`: changes the belfry must make for this app (redirect URI, push…). This repo
@@ -80,7 +81,9 @@ agent), local-only. `-screen <name>` opens a screen for the screenshot job (`scr
 screenshots.sh` lists them: feed, thread, details, invite, messages, conversation, mail, search,
 channels, pulldown, menu, delete, edit, threadscreen, chsearch, add, pod, proposal, event,
 profile, editprofile, me, members, todos, files, events, eventhost, eventform). `-join` (no
-`-demo`) shows the signed-out join screen with a demo invite. `-signin code` / `-signin older`
+`-demo`) opens a demo guest link signed out (the loading screen, then guest mode). `-guest
+opening|feed|join|code` shows guest mode's screens (the loading screen; #general read as a
+guest; the Join sheet; its code step), demo code 123456. `-signin code` / `-signin older`
 show the sign-in's code screen / the older-belfry state with made-up values (nothing is sent).
 
 ## UI rules (the owner's, not negotiable)
@@ -116,6 +119,11 @@ show the sign-in's code screen / the older-belfry state with made-up values (not
   entitlement) for `/join/<token>` and `/events/<link>`; the chat hosts must serve
   apple-app-site-association (SERVER-NEEDS 5). A guest's join session key lives in the Keychain
   (service `sh.belfry.app.session.keys`, account `join-<token>`) until the join works.
+- Guest mode (SPEC 19.26): `GuestModeGate` (BelfryCore) is the one check; `SyncEngine.guestMode`
+  and `BelfryAPI(guestMode:)` carry it. Any new write path must go through the outbox or
+  `BelfryAPI.signed` / `SyncEngine.signedRequest`, or check the gate itself. Automatic writes
+  (seen marks, push registration) are skipped while reading, not refused (a refusal opens the
+  Join sheet).
 - iOS 17+. NavigationSplitView; channel details as a sheet with medium/large detents (web: custom
   pull-down) and the channel line's pull-down as a sheet too; the message menu as a sheet list (not
   `.contextMenu`); `.searchable`; `ShareLink`; CoreImage

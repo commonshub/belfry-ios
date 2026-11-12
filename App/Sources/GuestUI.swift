@@ -97,6 +97,8 @@ struct JoinSheet: View {
     @State private var error: String?
     @State private var note: String?
     @State private var moved = false
+    /// `taken`: the account's name@domain, when the belfry said (prefills the sign-in).
+    @State private var takenAddress: String?
     /// What the person typed, as it was when the code went out.
     @State private var sentTo = ""
     @State private var resendAt = Date()
@@ -221,7 +223,7 @@ struct JoinSheet: View {
         Text(sentTo).bold()
         Text(moved && !label.isEmpty ? "Sign in with it: \(label) is waiting there." : "Sign in with it instead.").foregroundStyle(.secondary)
         BusyButton {
-            await model.signInInstead(channel: model.guestChannel ?? "", moved: moved)
+            await model.signInInstead(channel: model.guestChannel ?? "", moved: moved, nip05: takenAddress, typed: sentTo)
         } label: { Text("Sign in instead").frame(maxWidth: .infinity).padding(.vertical, 6) }
         .buttonStyle(.borderedProminent)
         if !moved {
@@ -231,8 +233,8 @@ struct JoinSheet: View {
     }
 
     private func fail(_ f: GuestJoinFailure) {
-        if f.error == .taken { moved = f.moved; step = .taken; error = nil; return }
-        error = f.error.message
+        if f.error == .taken { moved = f.moved; takenAddress = f.nip05; step = .taken; error = nil; return }
+        error = f.display
     }
 
     @discardableResult

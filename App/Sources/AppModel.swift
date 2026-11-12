@@ -68,6 +68,8 @@ final class AppModel: ObservableObject {
     @Published var inviteSignInFirst = false
     /// The domain to suggest on the sign-in screen (after "Sign in instead").
     @Published var signInDomainHint: String?
+    /// A fixed line on the sign-in screen after "Sign in instead" (no address to prefill).
+    @Published var signInNote: String?
     var openingToken: String?
 
     private(set) var engine: SyncEngine?

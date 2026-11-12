@@ -572,7 +572,11 @@ public final class Derive {
         }
         for id in order where (map[id]!.isPod || map[id]!.isProposal) && map[id]!.parent == nil { map[id]!.parent = generalId }
         // reading guests are in no member list or count until they join (the relay's 39002 has them)
-        for id in order { map[id]!.members.subtract(map[id]!.reading.subtracting([me])) }
+        for id in order {
+            guard var g = map[id], !g.reading.isEmpty else { continue }
+            g.members.subtract(g.reading.subtracting([me]))
+            map[id] = g
+        }
         for k in appliedOrder {
             guard let e = applied[k] else { continue }
             let gid = String(k.dropLast(e.pubkey.count))
@@ -907,7 +911,7 @@ public final class Derive {
     public func guestJoinsOf(_ pubkey: String) -> [GuestJoin] { allGuestJoins.filter { $0.pubkey == pubkey } }
 
     /// Am I (still) a guest here, and not a member.
-    public var amGuest: Bool { allGuestJoins.contains { $0.pubkey == me } }
+    public var amGuest: Bool { allGuestJoins.contains { $0.pubkey == me } || groupList.contains { $0.reading.contains(me) } }
 
     /// Why this person can't be made an admin of the belfry (fixed text), or nil when they can.
     public func noAdminReason(_ pubkey: String) -> String? {

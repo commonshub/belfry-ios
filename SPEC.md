@@ -490,7 +490,8 @@ core in `Sources/BelfryCore/Model/` (`Derive` + its extensions `Events`, `Propos
 kept identical in both repositories (opencollective/belfry-ios and opencollective/belfry-android)
 and this file differs only in this paragraph and the (iOS) notes that end 19.19 and 19.20:
 change both in both. Android's 19.21 (web changes of 2026-11-11 / 12) and 19.22 (snapshots built
-on the one before) are not ported here yet.
+on the one before), 19.23 to 19.25 are not ported here yet. 19.26 (guest mode) is Android's text
+with the (iOS) notes at its end.
 
 `KINDS_GROUPS` (section 4) now also has **1010** (edits).
 
@@ -578,6 +579,8 @@ versions: there is no `/api/guest-sessions` any more.
 - A guest saves their account with `POST <api>/guest/save` `{email}` then
   `POST <api>/guest/save/verify` `{email, code}` (both NIP-98 as the guest); the groups key then
   labels them `saved` (19.3).
+- **Since 2026-11-12 a client opening a link signed out sends `{}`, not a name** (guest mode,
+  19.26). The `{"name"}` body still works (older clients).
 
 ### 19.5 Profiles: tags and places (kind 30078, `d` = `belfry:profile`)
 
@@ -1065,3 +1068,113 @@ belfry. The contract is the module docstring of `services/onboarding/belfry_onbo
     and the checks; `NativeSignInFlow`: the request kept in the Keychain under `native-signin`,
     service `sh.belfry.app.session.keys`), `App/Sources/SignInView.swift` (`AddressScreen`,
     `CodeScreen`, `CodeBoxes`), `AppModel+SignIn.swift`; tests `NativeSignInTests`.
+
+### 19.26 Guest mode: opening an invitation reads the channel at once (2026-11-12)
+
+(collective-belfry `docs/guests.md` "Opening it: guest mode", `guests.py`; web village-app
+b2e968b `core/guestmode.ts`, `core/guestjoin.ts`, `ui/GuestJoin.tsx`.) Replaces the name screen
+of 19.4 for people who have no account on that belfry. Joining with an account (19.4, 19.24's
+"which account?") is unchanged.
+
+- **Opening the link, no account here.** No screen asks anything. The device makes its session
+  key (one per invitation, kept until the join succeeds: a retry signs with the same key and the
+  belfry answers with the same guest) and sends `POST <api.channel_invites>/<token>/join` with
+  body `{}` (NIP-98 by that key). 200 →
+  `{"channel","new":true,"guest":true,"reading":true,"bunker_url","pubkey"}`. The session's
+  pubkey is the answer's `pubkey` (do not ask the signer for it first). `reading` absent or
+  `true` → guest mode; `false` (a belfry that still names guests) → a plain unsaved guest.
+  Errors by code, fixed texts: 410 `closed` "This invite can’t be used any more. Ask for a new
+  one.", 410 `for_agent` "This link is for an AI agent, not a person.", 409 `unsupported` "This
+  belfry does not take guests.", 422 `name_needed` (an older belfry) "This belfry is being
+  updated. Try again in a few minutes.", 409 `session_taken`: forget the key, make a new one and
+  send once more (then give up). The invite's info (`GET …/<token>`) is read alongside for the
+  loading line and, when the join fails, to say why (`state` used / expired / revoked → its
+  fixed text, 19.4).
+- **One loading screen** from the moment the link is read until the channel can be drawn in
+  full: a spinner and "Opening # <channel_name>…" ("Opening…" until the info is in). It stays
+  while the session is made and until the groups relay has sent its stored events (EOSE) or
+  refused the key, at most 10 s after the session exists. Nothing else is drawn in between: no
+  empty channel ("… is new · Invite people"), no home. A failure replaces it with the fixed
+  "This invite can’t be used" screen (Try again when not closed, "I have an account: sign in",
+  Close).
+- **Guest mode** (the device's guest record says `reading`; kept with the saved session): the
+  channel shows; where the composer would be, a bar "**Guest mode** · You’re reading
+  # <channel> as a guest." with **Join**. The thread screen and inline threads show the same bar
+  (no reply box). An empty channel says "No messages here yet." (no Invite button).
+  **Nothing is sent**: every write (messages, replies, reactions, edits, RSVPs, votes, to-dos,
+  profile, invites, follows, the first channel of an empty belfry, any belfry API call that
+  changes something) is refused on the device where events are queued and API writes are made,
+  and opens the Join sheet instead. No `seen` mark (19.21 / 11) is sent. Allowed: reading,
+  `GET`s, push registration, `/guest/save`, `/guest/save/verify`, revoking the own session,
+  using another link. Long-press / "add a reaction" on a message opens the Join sheet. The
+  relay does not enforce this: it would store what such a key signs.
+- **The Join sheet** ("Join # <channel>"): "Your name and e-mail address, and you can write
+  here. We’ll send a 6-digit code to your e-mail to confirm it." Fields name (required, ≤100,
+  spaces folded) and e-mail (required, `\S+@\S+\.\S+`), Continue, then "Already have an account
+  on <domain>? Use its e-mail address." Continue → `POST <api>/guest/save {"email","name"}` →
+  202. The code step: title **"Check your e-mail"**, "We sent a 6-digit code by e-mail to
+  <the address as typed>. It can take a minute.", six boxes (the sign-in's), the sixth digit
+  sends `POST <api>/guest/save/verify {"email","code","name"}` → 200
+  `{"saved":true,"joined":bool}`; the guest record becomes saved and not reading, the bar goes
+  and the composer is there (the channel then gets the guest's second 9000 with `name`: the join
+  line). Under the boxes "Checking the code…" / the error / "Not there? Look in your spam
+  folder."; "Send a new code" (locked 30 s after each send; "A new code is on its way to your
+  e-mail.") and "Use another address" (back to the fields).
+- **Errors** (never the server's text): `invalid` "That doesn’t look like an e-mail address.",
+  `name_needed` "Your name is needed to join.", `too_many` "Too many codes for now. Try again in
+  half an hour.", `wrong_code` with `tries_left` (int, collective-belfry d2b4c52) "That code is
+  not right. N tries left." / "… 1 try left." / (0) "That code is not right. Send a new one.",
+  without it "That code is not right. Check the e-mail and try again." (boxes emptied), `expired` "That code has expired. Send a new one.", `not_guest` "This guest access
+  has ended. Ask for a new invite.", no connection "No connection. Try again.", else "That did
+  not work. Try again.". 409 `taken` (body `{"error":"taken","moved":bool,"nip05"?}`; `nip05` =
+  that account's name@domain when the belfry can read it, d2b4c52): a step titled
+  "You have an account here": "<address> already has an account on <domain>." + (moved) "Sign
+  in with it: # <channel> is waiting there." / (not moved) "Sign in with it instead." and
+  **Sign in instead** (+ "Use another address" when not moved). Sign in instead: the guest
+  account is dropped from the device (its session revoked unless `moved`, where the belfry closed
+  it already), the native sign-in (19.20) starts, and once signed in the channel opens. The
+  native sign-in takes `name@domain`: its address field gets the answer's `nip05` when that is a
+  `name@domain` of this belfry (lower-cased), else the typed e-mail when it is one; otherwise the
+  field is empty with the fixed hint
+  "Sign in with your address here (name@<domain>), or with the browser using the e-mail you
+  typed." (The web's browser sign-in takes the e-mail itself.)
+- **The save-your-account bar** of a guest who has a name but no e-mail (19.3: after their first
+  message / reply / reaction, or a co-host link) opens the same sheet without the name field:
+  title "Save your account", "Add your e-mail address to come back from any device. We’ll send a
+  6-digit code to it.", body `{"email"}` / `{"email","code"}`. Done: "Saved. Sign in with
+  <address> on any device." The bar is never shown in guest mode.
+- **Other people's reading guests** (how everyone else's client reads the events). A key is
+  **reading** in a channel when its latest kind 9000 there (in time order) carries
+  `["reading","1"]`; a later 9000 without it, a kind 1985 `L belfry/guest` with `l saved` or
+  `l member` for that `p`, or a 9001 ends it. For reading keys (except me): no join line ("…
+  joined as a guest", 19.3), not in the channel's members (also when the relay's 39002 lists
+  them), member counts, "active this month", the channel line's faces or mention / invite
+  pickers. The Members tab adds one line "1 guest is reading" / "N guests are reading: they
+  opened an invite link and have not joined yet." The join line comes from the later 9000
+  without `reading` (which carries the name). A guest put in with a name and `unsaved` (a
+  meeting's held guests, older links) never carries `reading` and is **not** hidden.
+- Vectors: `vectors/guestmode.json` (events → reading keys, members, join lines per channel).
+- (iOS) Differences from the text above, to carry back to Android's:
+  - **`tries_left` and `nip05`** (collective-belfry d2b4c52): 422 `wrong_code` carries an int
+    `tries_left` → "That code is not right. N tries left." ("1 try left."; 0 → "That code is not
+    right. Ask for a new one."; absent → the text above). 409 `taken` carries `nip05` (that
+    account's `name@domain`) when the belfry can read it: "Sign in instead" puts it in the native
+    sign-in's address field; without it, the typed e-mail when it is `name@<domain>`; else the
+    field is empty with the fixed hint above.
+  - **No push registration while reading** (the web has no push; iOS registers once joined): the
+    task asked for nothing to be sent before Join. `/whois` (a read sent as a POST) is allowed.
+  - Automatic writes are skipped, not refused, while reading (seen marks, the first channel,
+    push), so they never open the Join sheet by themselves.
+  - Code: `Sources/BelfryCore/Model/GuestMode.swift` (`GuestModeGate`: `reading`, `refuse()`,
+    `check(url:method:)`, `allowsWhileReading`; `GuestJoinError` / `GuestJoinFailure`;
+    `GuestJoinForm`), `SyncEngine.guestMode` (enqueue / enqueueSigned return "" and ask to join;
+    `signedRequest` and `upload` throw), `BelfryAPI(guestMode:)` (`signed` throws `guest_mode`),
+    `DirectMessages` sends check it; `Derive`: `Group.reading`, `readingCount`, `onlyReading`,
+    `amReading`; `BelfryAPI.joinAsNew(name: nil)` → `JoinedNew.reading`, `guestSave(email:name:)`,
+    `guestVerify(email:code:name:) -> joined`. App: `AppModel+Guest.swift` (`openInvite`, the
+    loading screen's wait, `sendJoinCode` / `verifyJoinCode`, `finishJoining`, `signInInstead`;
+    `StoredSession.reading` / `guestChannel` in the Keychain), `GuestUI.swift` (`OpeningScreen`,
+    `InviteProblemScreen`, `GuestBar`, `JoinSheet`). The Join sheet is presented from the root, so
+    a write refused inside another sheet (channel details, an event page) opens it only once that
+    sheet is closed. Tests `GuestModeTests`. Demo: `-guest opening|feed|join|code` (code 123456;
+    `taken@example.org` answers `taken`, moved).
