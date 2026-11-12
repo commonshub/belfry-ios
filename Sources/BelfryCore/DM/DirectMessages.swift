@@ -152,6 +152,7 @@ public final class DirectMessages: @unchecked Sendable {
     // ---- sending ----------------------------------------------------------------------------------
 
     func deliver(_ rumor: NostrEvent, to: [String], selfCopy: Bool = true) async throws {
+        try engine.guestMode.check()
         var targets = [String]()
         for p in to + (selfCopy ? [me] : []) where !targets.contains(p) { targets.append(p) }
         for p in targets {
@@ -166,6 +167,7 @@ public final class DirectMessages: @unchecked Sendable {
 
     /// A NIP-17 message in a Nostr conversation.
     public func send(_ text: String, in conv: String) async throws {
+        try engine.guestMode.check()
         onSend?()
         let to = MailThreads.peers(conv).filter { $0 != me }
         guard to.allSatisfy(isHex64) else { throw BelfryError.invalid("This is not a valid Nostr key.") }
@@ -186,6 +188,7 @@ public final class DirectMessages: @unchecked Sendable {
     /// An e-mail through the belfry's bridge. Returns the thread it lands in.
     @discardableResult
     public func sendMail(_ text: String, in conv: String, subject: String? = nil, fromName: String) async throws -> String {
+        try engine.guestMode.check()
         onSend?()
         guard let b = bridge else { throw BelfryError.invalid("This belfry does not send e-mail yet.") }
         guard let from = myAddress else { throw BelfryError.invalid("You have no address here yet (name@domain).") }
@@ -236,6 +239,7 @@ public final class DirectMessages: @unchecked Sendable {
     /// sender of the inbox card CARDID (SPEC 19.6). Returns the e-mail's id (its delivery report).
     @discardableResult
     public func sendAsChannel(channel: String, channelName: String, to: String, subject: String, text: String, inReplyTo: String?, cardId: String, myName: String) async throws -> String {
+        try engine.guestMode.check()
         guard let b = bridge else { throw BelfryError.invalid("This belfry does not send e-mail yet.") }
         let from = channel + "@" + engine.config.domain
         let (raw, _) = MIME.build(fromName: myName.isEmpty ? channelName : "\(myName) for \(channelName)", from: from, to: to, subject: subject, text: text,

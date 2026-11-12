@@ -37,6 +37,8 @@ shot() { # name screen appearance
     xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
   elif [ "$2" = "signin-code" ] || [ "$2" = "signin-older" ]; then
     xcrun simctl launch "$UDID" "$BUNDLE" -signin "${2#signin-}" >/dev/null
+  elif [ "${2#guest-}" != "$2" ]; then
+    xcrun simctl launch "$UDID" "$BUNDLE" -guest "${2#guest-}" >/dev/null
   elif [ "$2" = "join" ]; then
     xcrun simctl launch "$UDID" "$BUNDLE" -join >/dev/null
   else
@@ -79,7 +81,11 @@ shot 33-event-form eventform light
 shot 34-notifications notifications light
 shot 11-feed-dark feed dark
 shot 12-channels-dark channels dark
-shot 30-join join light
+shot 30-guest-opening guest-opening light
+shot 38-guest-mode guest-feed light
+shot 39-guest-join guest-join light
+shot 40-guest-code guest-code light
+shot 41-guest-mode-dark guest-feed dark
 shot 35-sign-in-code signin-code light
 shot 36-sign-in-older-belfry signin-older light
 shot 37-sign-in-code-dark signin-code dark

@@ -357,8 +357,10 @@ struct InlineThread: View {
                     .font(.caption.weight(.semibold))
             }
             ForEach(shown) { r in ReplyRow(r: r, onHold: { onHold(r) }) }
-            Composer(group: group, placeholder: shown.isEmpty ? "Reply (starts a thread)" : "Reply in the thread", compact: true) { text, _, _ in
-                model.reply(text, in: group, to: root)
+            if !model.guestReading {
+                Composer(group: group, placeholder: shown.isEmpty ? "Reply (starts a thread)" : "Reply in the thread", compact: true) { text, _, _ in
+                    model.reply(text, in: group, to: root)
+                }
             }
             HStack(spacing: 16) {
                 Button("Hide", action: onHide)

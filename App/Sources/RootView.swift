@@ -65,7 +65,7 @@ struct RootView: View {
         .sheet(item: Binding(get: { model.openProfile.map { ProfileKey(pubkey: $0) } }, set: { model.openProfile = $0?.pubkey })) { k in
             ProfileView(pubkey: k.pubkey)
         }
-        .sheet(item: Binding(get: { model.pendingInvite }, set: { if $0 == nil { model.pendingInvite = nil } })) { inv in
+        .sheet(item: Binding(get: { model.guestReading ? nil : model.pendingInvite }, set: { if $0 == nil { model.pendingInvite = nil } })) { inv in
             JoinWithAccountSheet(invite: inv)
         }
         .onChange(of: model.pushOpen) { _, p in
@@ -87,7 +87,12 @@ struct RootView: View {
         .alert(model.website ?? "", isPresented: Binding(get: { model.website != nil }, set: { if !$0 { model.website = nil } })) {
             Button("OK") { model.website = nil }
         }
-        .onAppear(perform: applyLaunchScreen)
+        .onAppear {
+            applyLaunchScreen()
+            // a guest link's channel, set while the loading screen stood here
+            if let id = model.joinedChannel { model.joinedChannel = nil; selection = .channel(id) }
+        }
+        .sheet(isPresented: $model.joinAsked) { JoinSheet() }
         .sheet(isPresented: $newChannel) { NewChannelSheet { id in selection = .channel(id) } }
         .sheet(isPresented: $account) { AccountSheet() }
         .sheet(isPresented: $notifications) { NavigationStack { NotificationsView() } }

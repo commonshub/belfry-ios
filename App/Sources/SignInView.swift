@@ -252,7 +252,7 @@ private struct CodeScreen: View {
 
 /// Six boxes over one numeric field: the field takes the typing, a paste ("123 456") and the
 /// system's code suggestion; the boxes show it. The sixth digit calls COMPLETE.
-private struct CodeBoxes: View {
+struct CodeBoxes: View {
     @Binding var digits: String
     let enabled: Bool
     var focused: FocusState<Bool>.Binding

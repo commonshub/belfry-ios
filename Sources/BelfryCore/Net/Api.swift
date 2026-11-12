@@ -65,7 +65,15 @@ public struct InviteInfo: Hashable, Sendable {
     }
 }
 
-public struct JoinedNew: Hashable, Sendable { public let bunkerURL: String; public let channel: String; public let pubkey: String?; public let emailNeeded: Bool }
+public struct JoinedNew: Hashable, Sendable {
+    public let bunkerURL: String
+    public let channel: String
+    public let pubkey: String?
+    public let emailNeeded: Bool
+    /// Guest mode (SPEC 19.26): a nameless guest who reads until they join. False for a guest
+    /// who joined by name (older clients) and for an older belfry that does not say.
+    public var reading = false
+}
 public struct JoinedAccount: Hashable, Sendable { public let channel: String; public let already: Bool; public let guest: Bool }
 public struct Places: Hashable, Sendable { public let places: [Place]; public let attribution: String? }
 /// E-mail follows of channels' announcements: channel id → `asap` | `monthly`.
@@ -106,11 +114,14 @@ public struct BelfryAPI: Sendable {
     public let config: BelfryConfig
     public let signer: Signer?
     public let session: URLSession
+    /// Guest mode: signed calls that write are refused on the device (SPEC 19.26).
+    public let guestMode: GuestModeGate?
 
-    public init(config: BelfryConfig, signer: Signer?, session: URLSession = .shared) {
+    public init(config: BelfryConfig, signer: Signer?, session: URLSession = .shared, guestMode: GuestModeGate? = nil) {
         self.config = config
         self.signer = signer
         self.session = session
+        self.guestMode = guestMode
     }
 
     var base: String { config.apiBase }
@@ -144,6 +155,9 @@ public struct BelfryAPI: Sendable {
     /// A request signed by the member (NIP-98). BODY nil = no body (GET).
     public func signed(_ url: String, method: String = "GET", json: [String: Any]? = nil) async throws -> Answer {
         guard let signer else { throw ApiError("signer", 0, BelfryAPI.generic) }
+        if let guestMode {
+            do { try guestMode.check(url: url, method: method) } catch { throw ApiError("guest_mode", 0, GuestModeRefused.message) }
+        }
         let body = try json.map { try JSONSerialization.data(withJSONObject: $0) }
         let auth: String
         do { auth = try await BelfryAPI.header(signer, url: url, method: method, body: body) } catch {
@@ -241,12 +255,14 @@ public struct BelfryAPI: Sendable {
                           inviter: (b["inviter"] as? String ?? "").sliceUnits(100), state: b["state"] as? String ?? "used", days: BelfryAPI.int(b["days"]) ?? 30)
     }
 
-    /// A new guest: this device's fresh session key signs the request and sends a name; the belfry
-    /// answers with its session, bound to that key. Keep ONE key per invite until this succeeds;
-    /// `session_taken` (409): make a new key and try again.
-    public func joinAsNew(token: String, name: String, sessionSecretHex: String) async throws -> JoinedNew {
+    /// A new guest: this device's fresh session key signs the request; the belfry answers with
+    /// its session, bound to that key. NAME nil (guest mode, SPEC 19.26): the body is `{}` and the
+    /// guest reads until they join; a name: a guest by that name at once (older flow). Keep ONE key
+    /// per invite until this succeeds; `session_taken` (409): make a new key and try again.
+    public func joinAsNew(token: String, name: String? = nil, sessionSecretHex: String) async throws -> JoinedNew {
         let url = config.channelInvites + "/" + token + "/join"
-        let body = try JSONSerialization.data(withJSONObject: ["name": name.jsTrim().sliceUnits(100)])
+        let body: Data
+        if let name { body = try JSONSerialization.data(withJSONObject: ["name": name.jsTrim().sliceUnits(100)]) } else { body = Data("{}".utf8) }
         let auth: String
         do { auth = try await BelfryAPI.header(LocalSigner(secretHex: sessionSecretHex), url: url, method: "POST", body: body) } catch {
             throw ApiError("signer", 0, BelfryAPI.generic)
@@ -254,10 +270,15 @@ public struct BelfryAPI: Sendable {
         let a = try await send(url, method: "POST", body: body, authorization: auth)
         guard a.ok, let b = a.body, let bunker = b["bunker_url"] as? String, BunkerURL(bunker) != nil else {
             if a.status == 409 && BelfryAPI.joinErrors[a.error] == nil { throw ApiError("session_taken", 409, "Joining did not work just now. Try again.") }
-            throw BelfryAPI.fail(a, BelfryAPI.joinErrors, "Joining did not work just now. Try again.")
+            var m = BelfryAPI.joinErrors
+            // asked with `{}`: only a belfry from before guest mode wants a name here
+            if name == nil { m["name_needed"] = "This belfry is being updated. Try again in a few minutes." }
+            throw BelfryAPI.fail(a, m, "Joining did not work just now. Try again.")
         }
-        return JoinedNew(bunkerURL: bunker, channel: b["channel"] as? String ?? generalId,
-                         pubkey: (b["pubkey"] as? String).flatMap { isHex64($0) ? $0 : nil }, emailNeeded: b["email_needed"] as? Bool ?? false)
+        var j = JoinedNew(bunkerURL: bunker, channel: (b["channel"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? generalId,
+                          pubkey: (b["pubkey"] as? String).flatMap { isHex64($0) ? $0 : nil }, emailNeeded: b["email_needed"] as? Bool ?? false)
+        j.reading = name == nil && b["reading"] as? Bool != false && b["guest"] as? Bool != false
+        return j
     }
 
     /// Someone signed in uses a guest link: their account gets the channel (no second account).
@@ -271,15 +292,31 @@ public struct BelfryAPI: Sendable {
         return JoinedAccount(channel: channel, already: b["already"] as? Bool ?? false, guest: b["guest"] as? Bool ?? false)
     }
 
-    /// A guest saves their account: a 6-digit code goes to this address.
-    public func guestSave(email: String) async throws {
-        let a = try await signed(base + "/guest/save", method: "POST", json: ["email": email.jsTrim()])
-        if !a.ok { throw BelfryAPI.fail(a, BelfryAPI.guestErrors, BelfryAPI.generic) }
+    /// Join from guest mode, or save a named guest's account (SPEC 19.26): a 6-digit code goes
+    /// to EMAIL. NAME is sent when the guest has none yet (guest mode). Refusals: `GuestJoinFailure`.
+    public func guestSave(email: String, name: String? = nil) async throws {
+        var body: [String: Any] = ["email": email.jsTrim()]
+        if let name { body["name"] = GuestJoinForm.cleanName(name) }
+        _ = try await guestCall("/guest/save", body)
     }
 
-    public func guestVerify(email: String, code: String) async throws {
-        let a = try await signed(base + "/guest/save/verify", method: "POST", json: ["email": email.jsTrim(), "code": code.jsTrim()])
-        if !a.ok { throw BelfryAPI.fail(a, BelfryAPI.guestErrors, BelfryAPI.generic) }
+    /// The code from the e-mail. Returns `joined` (true: they were in guest mode and are now in
+    /// the channel with their name).
+    @discardableResult
+    public func guestVerify(email: String, code: String, name: String? = nil) async throws -> Bool {
+        var body: [String: Any] = ["email": email.jsTrim(), "code": code.jsTrim()]
+        if let name { body["name"] = GuestJoinForm.cleanName(name) }
+        let b = try await guestCall("/guest/save/verify", body)
+        return b["joined"] as? Bool ?? false
+    }
+
+    func guestCall(_ path: String, _ body: [String: Any]) async throws -> [String: Any] {
+        let a: Answer
+        do { a = try await signed(base + path, method: "POST", json: body) } catch let e as ApiError {
+            throw GuestJoinFailure(e.code == "network" ? .offline : .failed)
+        }
+        guard a.ok else { throw GuestJoinFailure(GuestJoinError(code: a.error), moved: a.body?["moved"] as? Bool == true) }
+        return a.body ?? [:]
     }
 
     // ---- places ---------------------------------------------------------------------------------
@@ -409,18 +446,11 @@ public struct BelfryAPI: Sendable {
     ]
     static let joinErrors = [
         "name_needed": "Tell us your name.",
-        "closed": "This invite is closed. Ask for a new one.",
-        "unsupported": "This belfry does not have guest links.",
+        "closed": "This invite can’t be used any more. Ask for a new one.",
+        "for_agent": "This link is for an AI agent, not a person.",
+        "unsupported": "This belfry does not take guests.",
         "relay": "The channel could not be reached just now. Try again.",
         "failed": "Joining did not work just now. Try again.",
-    ]
-    static let guestErrors = [
-        "invalid": "That is not an e-mail address.",
-        "too_many": "Too many codes for now. Try again in half an hour.",
-        "wrong_code": "That code is not right.",
-        "expired": "That code expired. Send a new one.",
-        "taken": "This address belongs to a member already: sign in with it instead.",
-        "not_guest": "This account is not a guest account.",
     ]
     static let placeErrors = [
         "bad_country": "That country code is not known.",

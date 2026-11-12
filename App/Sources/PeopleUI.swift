@@ -423,43 +423,28 @@ struct DevicesView: View {
     }
 }
 
-/// A guest saves their account: an e-mail address, then the 6-digit code it receives.
+/// A guest who joined with a name only (an event's guest, an older link) saves their account:
+/// Save opens the same sheet as joining from guest mode, with the e-mail only (SPEC 19.26).
 struct SaveAccountCard: View {
     @EnvironmentObject var model: AppModel
     var compact = false
-    @State private var email = ""
-    @State private var code = ""
-    @State private var sent = false
-    @State private var done = false
-    @State private var error: String?
+    @State private var open = false
+    @State private var savedAs: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if done {
-                Label("Saved: you can sign in with your e-mail from now on.", systemImage: "checkmark.circle").foregroundStyle(.green)
-            } else {
-                Text(model.coHostToken != nil ? "To host this event, save your account with your e-mail." : "Save your account: add your e-mail, so you can sign in again on another device.")
+        HStack(spacing: 10) {
+            if let savedAs {
+                Label("Saved. Sign in with \(savedAs) on any device.", systemImage: "checkmark.circle").foregroundStyle(.green)
                     .font(compact ? .caption : .subheadline)
-                HStack {
-                    if sent {
-                        TextField("6-digit code", text: $code).keyboardType(.numberPad).textContentType(.oneTimeCode).font(.body)
-                        BusyButton("Confirm") {
-                            if let e = await model.guestVerify(email: email, code: code) { error = e } else { done = true }
-                        }
-                        .disabled(code.jsTrim().count < 6)
-                    } else {
-                        TextField("you@example.org", text: $email).keyboardType(.emailAddress).textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never).autocorrectionDisabled().font(.body)
-                        BusyButton("Send code") {
-                            if let e = await model.guestSave(email: email) { error = e } else { sent = true }
-                        }
-                        .disabled(!email.contains("@"))
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                if let error { Text(error).font(.caption).foregroundStyle(.red) }
+            } else {
+                Text(model.coHostToken != nil ? "To host this event, save your account with your e-mail." : "Save your account: add your e-mail to come back from any device.")
+                    .font(compact ? .caption : .subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button("Save") { open = true }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
             }
         }
+        .sheet(isPresented: $open) { JoinSheet(saveOnly: true) { savedAs = $0 } }
     }
 }

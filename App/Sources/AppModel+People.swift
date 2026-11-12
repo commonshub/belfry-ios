@@ -19,34 +19,8 @@ extension AppModel {
         if handleEventURL(url) { return }
         guard let (domain, token) = InviteLink.parse(url) else { return }
         pendingInvite = PendingInvite(domain: domain, token: token)
-    }
-
-    /// Join as someone new (not signed in): one session key per invite, kept until the join works.
-    func joinAsNew(_ invite: PendingInvite, name: String) async -> String? {
-        let cfg = (try? await Discovery.fetch(domain: invite.domain)) ?? .defaults(domain: invite.domain)
-        let api = BelfryAPI(config: cfg, signer: nil)
-        let keyName = "join-" + invite.token
-        let secret = Keychain.string(keyName) ?? {
-            let s = Keys.generateSecret().hex
-            Keychain.setString(s, keyName)
-            return s
-        }()
-        do {
-            let j = try await api.joinAsNew(token: invite.token, name: name, sessionSecretHex: secret)
-            Keychain.removeString(keyName)
-            let s = StoredSession(domain: invite.domain, bunkerURL: j.bunkerURL, clientSecret: secret, pubkey: j.pubkey)
-            Keychain.save(s)
-            pendingInvite = nil
-            joinedChannel = j.channel
-            open(s, config: cfg)
-            if j.emailNeeded { coHostToken = invite.token }
-            return nil
-        } catch let e as ApiError {
-            if e.code == "session_taken" { Keychain.removeString(keyName) }
-            return e.message
-        } catch {
-            return BelfryAPI.generic
-        }
+        // signed out: straight to the channel in guest mode (one loading screen, no name asked)
+        if phase == .signedOut, pendingCode == nil, !inviteSignInFirst { inviteProblem = nil; openInvite(pendingInvite!) }
     }
 
     /// Someone signed in uses a guest link: their account gets the channel (no second account).
@@ -68,24 +42,7 @@ extension AppModel {
     /// Am I a guest whose account has no e-mail yet ("save your account").
     var unsavedGuest: Bool {
         let joins = derive.guestJoinsOf(me)
-        return !joins.isEmpty && joins.allSatisfy(\.unsaved)
-    }
-
-    func guestSave(email: String) async -> String? {
-        if engine?.localOnly == true { return nil }
-        do { try await api.guestSave(email: email); return nil } catch let e as ApiError { return e.message } catch { return BelfryAPI.generic }
-    }
-
-    func guestVerify(email: String, code: String) async -> String? {
-        if engine?.localOnly == true { return nil }
-        do {
-            try await api.guestVerify(email: email, code: code)
-            if let t = coHostToken {
-                coHostToken = nil
-                if let e = await joinWithAccount(t) { return e }
-            }
-            return nil
-        } catch let e as ApiError { return e.message } catch { return BelfryAPI.generic }
+        return !guestReading && !joins.isEmpty && joins.allSatisfy(\.unsaved)
     }
 
     // ---- guest links I make ---------------------------------------------------------------------

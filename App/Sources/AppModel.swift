@@ -11,6 +11,10 @@ struct StoredSession: Codable, Equatable {
     var clientSecret: String // hex, this device's key for the bunker
     var pubkey: String?
     var demo: Bool = false
+    /// Guest mode (SPEC 19.26): this session opened a guest link and reads until it joins.
+    var reading: Bool? = nil
+    /// The channel the guest link opened.
+    var guestChannel: String? = nil
 }
 
 @MainActor
@@ -52,6 +56,19 @@ final class AppModel: ObservableObject {
     @Published var pendingCode: PendingCode?
     let nativeFlow = NativeSignInFlow(vault: KeychainVault())
     @Published var busy = false
+    /// Guest mode (SPEC 19.26): reading only; the composer's place says so, with Join.
+    @Published var guestReading = false
+    /// The Join sheet (the guest bar's Join, or anything that writes while reading).
+    @Published var joinAsked = false
+    /// One loading screen from a guest link to its channel; nothing else is drawn meanwhile.
+    @Published var opening: Opening?
+    /// A guest link that can't be used: its own screen (fixed messages).
+    @Published var inviteProblem: InviteProblem?
+    /// "I have an account: sign in" on that screen: the sign-in first, the link after.
+    @Published var inviteSignInFirst = false
+    /// The domain to suggest on the sign-in screen (after "Sign in instead").
+    @Published var signInDomainHint: String?
+    var openingToken: String?
 
     private(set) var engine: SyncEngine?
     private(set) var dms: DirectMessages?
@@ -73,7 +90,11 @@ final class AppModel: ObservableObject {
     static let redirectURI = "sh.belfry.app://connect"
 
     init() {
-        if ProcessInfo.processInfo.arguments.contains("-join") {
+        if let g = launch.guest {
+            pendingInvite = nil
+            if g == "opening" { opening = Opening(channel: "garden-3f2a", name: "Garden") } else { startDemo(reader: true) }
+            if g == "join" || g == "code" { DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { self.joinAsked = true } }
+        } else if ProcessInfo.processInfo.arguments.contains("-join") {
             pendingInvite = PendingInvite(domain: "demo.belfry.sh", token: "demoinvite0123456789abcd")
         } else if launch.demo {
             pendingInvite = nil
@@ -88,6 +109,8 @@ final class AppModel: ObservableObject {
             open(s)
         } else {
             pendingCode = nativeFlow.pending
+            // a guest link kept from before: the loading screen at once
+            if pendingCode == nil, let inv = pendingInvite { openInvite(inv) }
         }
     }
 
@@ -194,6 +217,15 @@ final class AppModel: ObservableObject {
         e.onSent = { [weak d] item, _ in d?.outboxSent(item) }
         e.onFailed = { [weak d] item in d?.outboxFailed(item) }
         d.onSend = { Push.markSent() }
+        // guest mode: nothing is sent until joining; a refused write opens the Join sheet
+        e.guestMode.reading = s.reading == true
+        e.guestMode.onRefused = { [weak self] in DispatchQueue.main.async { self?.joinAsked = true } }
+        guestReading = s.reading == true
+        if let ch = UserDefaults.standard.string(forKey: AppModel.openAfterSignInKey) {
+            // signed in after guest mode said "this address has an account": the channel they read
+            UserDefaults.standard.removeObject(forKey: AppModel.openAfterSignInKey)
+            joinedChannel = ch
+        }
         engine = e
         dms = d
         phase = .ready
@@ -250,7 +282,7 @@ final class AppModel: ObservableObject {
     }
 
     /// The belfry's HTTP API, signed as me.
-    var api: BelfryAPI { BelfryAPI(config: config, signer: engine?.signer) }
+    var api: BelfryAPI { BelfryAPI(config: config, signer: engine?.signer, guestMode: engine?.guestMode) }
 
     func updateAddress() {
         guard let dms else { return }
@@ -285,6 +317,8 @@ final class AppModel: ObservableObject {
         whoisAsked = []
         cachedGroups = nil
         cachedProfiles = nil
+        guestReading = false
+        joinAsked = false
         phase = .signedOut
         version += 1
     }
@@ -305,13 +339,16 @@ final class AppModel: ObservableObject {
 
     // ---- demo --------------------------------------------------------------------------------------
 
-    func startDemo() {
-        let s = StoredSession(domain: "demo.belfry.sh", bunkerURL: nil, clientSecret: Demo.meSecret.hex, pubkey: nil, demo: true)
+    /// READER: as someone who opened a guest link of #general (guest mode), not as Sam.
+    func startDemo(reader: Bool = false) {
+        let s = StoredSession(domain: "demo.belfry.sh", bunkerURL: nil, clientSecret: (reader ? Demo.readerSecret : Demo.meSecret).hex, pubkey: nil, demo: true,
+                              reading: reader ? true : nil, guestChannel: reader ? generalId : nil)
         var cfg = BelfryConfig.defaults(domain: "demo.belfry.sh")
         cfg.name = "Riverside Commons"
         cfg.admins = []
         open(s, config: cfg)
         groupsKey = Demo.signer("groups").pubkey
+        if reader { joinedChannel = generalId }
         if let e = engine, let d = dms {
             Task { await Demo.seed(engine: e, dms: d) ; self.updateAddress() }
         }
@@ -545,6 +582,7 @@ final class AppModel: ObservableObject {
 
     /// Opening a channel tells it, at most every 6 hours.
     func markSeen(_ id: String) {
+        if guestReading { return } // guest mode: reading leaves no trace
         guard let g = group(id), !(g.type == .pod && g.closed && !g.members.contains(me)) else { return }
         let now = Int.now
         guard Actions.shouldMarkSeen(now: now, mySeen: derive.mySeen(id), lastSentHere: seenSentHere[id] ?? 0) else { return }
@@ -631,11 +669,14 @@ struct LaunchOptions {
     let screen: String?
     /// `-signin code` / `-signin older`: the sign-in screens with made-up state, for screenshots.
     let signin: String?
+    /// `-guest opening|feed|join|code`: guest mode's screens in demo mode (SPEC 19.26).
+    let guest: String?
 
     init() {
         let args = ProcessInfo.processInfo.arguments
         demo = args.contains("-demo")
         if let i = args.firstIndex(of: "-screen"), i + 1 < args.count { screen = args[i + 1] } else { screen = nil }
         if let i = args.firstIndex(of: "-signin"), i + 1 < args.count { signin = args[i + 1] } else { signin = nil }
+        if let i = args.firstIndex(of: "-guest"), i + 1 < args.count { guest = args[i + 1] } else { guest = nil }
     }
 }

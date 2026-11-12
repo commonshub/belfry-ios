@@ -17,6 +17,8 @@ public final class SyncEngine: @unchecked Sendable {
     public let signer: Signer
     public let localOnly: Bool
     public let attachmentsDir: URL
+    /// Guest mode (SPEC 19.26): while reading, nothing is queued, signed for a request or uploaded.
+    public let guestMode = GuestModeGate()
 
     private let lock = NSLock()
     private var events = [String: NostrEvent]()
@@ -121,6 +123,7 @@ public final class SyncEngine: @unchecked Sendable {
 
     @discardableResult
     public func enqueue(_ d: Draft, attachments: [Attachment] = []) -> String {
+        if guestMode.refuse() { return "" } // guest mode: nothing is sent; the Join sheet opens
         let item = OutboxItem(target: d.target, kind: d.kind, content: d.content, tags: d.tags + [SyncEngine.clientTag],
                               createdAt: nextCreatedAt(), attachments: attachments)
         put(item)
@@ -130,6 +133,7 @@ public final class SyncEngine: @unchecked Sendable {
 
     @discardableResult
     public func enqueueSigned(_ ev: NostrEvent, target: Target, dm: String?) -> String {
+        if guestMode.refuse() { return "" }
         let item = OutboxItem(target: target, kind: ev.kind, content: ev.content, tags: ev.tags, createdAt: ev.createdAt, signed: ev, dm: dm)
         put(item)
         flushSoon()
@@ -246,6 +250,7 @@ public final class SyncEngine: @unchecked Sendable {
     // ---- Blossom, NIP-98 -------------------------------------------------------------------------
 
     public func upload(_ data: Data, name: String, mime: String, sha: String) async throws -> String {
+        try guestMode.check()
         let auth = try await signer.sign(Actions.blossomAuth(sha256: sha, name: name))
         guard let url = URL(string: config.blossom + "/upload") else { throw BelfryError.network("upload failed (no file server)") }
         var req = URLRequest(url: url, timeoutInterval: 120)
@@ -263,6 +268,7 @@ public final class SyncEngine: @unchecked Sendable {
     /// A request with a NIP-98 Authorization header signed by the member.
     public func signedRequest(_ urlString: String, method: String = "GET", json: [String: Any]? = nil) async throws -> (Data, Int) {
         guard let url = URL(string: urlString) else { throw BelfryError.invalid("bad url") }
+        try guestMode.check(url: urlString, method: method)
         let body = try json.map { try JSONSerialization.data(withJSONObject: $0) }
         let auth = try await signer.sign(Actions.httpAuth(url: urlString, method: method, body: body))
         var req = URLRequest(url: url, timeoutInterval: 20)
@@ -375,7 +381,7 @@ public final class SyncEngine: @unchecked Sendable {
         firstChannelTried = true
         let hasAny = events.values.contains { $0.kind == 39000 }
         lock.unlock()
-        guard !tried, !hasAny else { return }
+        guard !tried, !hasAny, !guestMode.reading else { return }
         for d in Actions.createChannel(id: generalId, name: "general", about: "Everything about \(config.name). Say hi 👋") { enqueue(d) }
     }
 

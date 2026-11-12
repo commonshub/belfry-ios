@@ -77,7 +77,7 @@ extension AppModel {
     }
 
     /// Whether to offer notifications in a channel (once, until answered or dismissed).
-    var offerPush: Bool { pushState == .notAsked && !UserDefaults.standard.bool(forKey: "belfry-push-asked") }
+    var offerPush: Bool { !guestReading && pushState == .notAsked && !UserDefaults.standard.bool(forKey: "belfry-push-asked") }
 
     func dismissPushOffer() {
         UserDefaults.standard.set(true, forKey: "belfry-push-asked")
@@ -86,7 +86,7 @@ extension AppModel {
 
     /// APNs gave a token: register it with K (a new K when this belfry has none yet).
     func didRegister(token: Data) async {
-        guard phase == .ready, !isDemo, engine != nil else { return }
+        guard phase == .ready, !isDemo, engine != nil, !guestReading else { return } // guest mode: registered after joining
         let domain = config.domain
         var key = PushKeyStore.load(group: keychainGroup).flatMap { $0.domain == domain ? $0.key : nil }
         if key == nil {
@@ -109,7 +109,7 @@ extension AppModel {
             PushKeyStore.clear(group: keychainGroup)
             UserDefaults.standard.removeObject(forKey: "belfry-push-token")
         }
-        guard !isDemo, let hex = UserDefaults.standard.string(forKey: "belfry-push-token"), let token = Data(hex: hex) else { return }
+        guard !isDemo, !guestReading, let hex = UserDefaults.standard.string(forKey: "belfry-push-token"), let token = Data(hex: hex) else { return }
         try? await api.removePushDevice(token: token)
     }
 

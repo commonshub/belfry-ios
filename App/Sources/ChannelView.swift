@@ -41,7 +41,11 @@ struct ChannelView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     if rows.isEmpty {
-                        EmptyChannel(name: g?.name ?? id, filtered: topic != nil) { invite = true }
+                        if model.guestReading && topic == nil {
+                            Text("No messages here yet.").foregroundStyle(.secondary).padding(32).frame(maxWidth: .infinity)
+                        } else {
+                            EmptyChannel(name: g?.name ?? id, filtered: topic != nil) { invite = true }
+                        }
                     }
                     ForEach(rows) { row in
                         if row.newDay { DaySeparator(at: row.item.at) }
@@ -52,11 +56,11 @@ struct ChannelView: View {
                                        todo: todos[m.id], pinned: pinnedIds.contains(m.id), openTopic: topic, flash: flash == m.id,
                                        onThread: { toggle(m.id) }, onOpenThread: { thread = ThreadRoute(group: id, root: m.id) },
                                        onReply: { thread = ThreadRoute(group: id, root: m.id, reply: true) },
-                                       onHold: { actionsFor = m }, onTopic: { t in withAnimation { topic = t } })
+                                       onHold: { hold(m) }, onTopic: { t in withAnimation { topic = t } })
                                 .id(m.id)
                             if openThreads.contains(m.id) {
                                 InlineThread(group: id, root: m, onOpen: { thread = ThreadRoute(group: id, root: m.id) },
-                                             onHold: { actionsFor = $0 }) { toggle(m.id) }
+                                             onHold: { hold($0) }) { toggle(m.id) }
                             }
                         case .join(let j):
                             JoinLine(join: j)
@@ -65,7 +69,7 @@ struct ChannelView: View {
                             ThreadActivity(root: root, last: last, open: openThreads.contains(key)) { toggle(key) }
                             if openThreads.contains(key) {
                                 InlineThread(group: id, root: root, onOpen: { thread = ThreadRoute(group: id, root: root.id) },
-                                             onHold: { actionsFor = $0 }) { toggle(key) }
+                                             onHold: { hold($0) }) { toggle(key) }
                             }
                         }
                     }
@@ -118,11 +122,16 @@ struct ChannelView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 0) {
+                if model.guestReading {
+                    // guest mode: reading only; Join opens the sheet (SPEC 19.26)
+                    GuestBar(group: id)
+                } else {
                 if model.unsavedGuest && d.messages(id).contains(where: { $0.pubkey == model.me }) {
                     SaveAccountCard(compact: true).padding(.horizontal).padding(.vertical, 8).background(.bar)
                 }
                 Composer(group: id, placeholder: "Message \(g.map { $0.isPod ? $0.name : "#" + $0.name } ?? id)", canAnnounce: d.canAdmin(g), topic: topic) { text, attachments, announce in
                     model.post(text, in: id, attachments: attachments, announce: announce, topic: topic)
+                }
                 }
                 }
             }
@@ -141,7 +150,9 @@ struct ChannelView: View {
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { search = true } label: { Image(systemName: "magnifyingglass") }.accessibilityLabel("Search")
-                Button { invite = true } label: { Image(systemName: "person.badge.plus") }.accessibilityLabel("Invite people")
+                if !model.guestReading {
+                    Button { invite = true } label: { Image(systemName: "person.badge.plus") }.accessibilityLabel("Invite people")
+                }
             }
         }
         .navigationDestination(item: $thread) { r in ThreadView(group: r.group, rootId: r.root, focusReply: r.reply) }
@@ -175,6 +186,11 @@ struct ChannelView: View {
             }
             return .systemAction
         })
+    }
+
+    /// Holding a message: its menu; in guest mode the Join sheet instead.
+    func hold(_ m: Message) {
+        if model.guestReading { model.joinAsked = true } else { actionsFor = m }
     }
 
     func takeThread() {

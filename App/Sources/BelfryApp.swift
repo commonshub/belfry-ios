@@ -10,11 +10,21 @@ struct BelfryApp: App {
     var body: some Scene {
         WindowGroup {
             SwiftUI.Group {
-                switch model.phase {
-                case .signedOut:
-                    // a code is on its way: that screen first, a guest link waits behind it
-                    if model.pendingCode == nil, let invite = model.pendingInvite { JoinScreen(invite: invite) } else { SignInView() }
-                case .ready: RootView()
+                if let o = model.opening {
+                    // a guest link: one loading screen until its channel can be drawn (SPEC 19.26)
+                    OpeningScreen(opening: o)
+                } else {
+                    switch model.phase {
+                    case .signedOut:
+                        // a code is on its way: that screen first, a guest link waits behind it
+                        if model.pendingCode == nil, !model.inviteSignInFirst, let invite = model.pendingInvite {
+                            if let p = model.inviteProblem { InviteProblemScreen(problem: p) }
+                            else { OpeningScreen(opening: Opening()).onAppear { model.openInvite(invite) } }
+                        } else {
+                            SignInView(domainHint: model.signInDomainHint ?? model.pendingInvite?.domain)
+                        }
+                    case .ready: RootView()
+                    }
                 }
             }
             .environmentObject(model)

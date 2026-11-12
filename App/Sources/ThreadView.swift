@@ -23,7 +23,7 @@ struct ThreadView: View {
                     if let root {
                         MessageRow(m: root, group: group, first: true, reactions: d.reactions(group)[root.id] ?? [], thread: nil, threadOpen: false,
                                    announce: d.isAnnouncement(root, d.group(group)), todo: d.todosBySource(group)[root.id],
-                                   onThread: {}, onOpenThread: {}, onReply: {}, onHold: { actionsFor = root })
+                                   onThread: {}, onOpenThread: {}, onReply: {}, onHold: { hold(root) })
                         HStack {
                             Text(replies.isEmpty ? "No replies yet" : "\(replies.count) \(replies.count == 1 ? "reply" : "replies")")
                                 .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
@@ -34,7 +34,7 @@ struct ThreadView: View {
                         ContentUnavailableView("This message is gone", systemImage: "bubble.left")
                     }
                     ForEach(replies) { r in
-                        ReplyRow(r: r) { actionsFor = r }.padding(.horizontal).id(r.id)
+                        ReplyRow(r: r) { hold(r) }.padding(.horizontal).id(r.id)
                     }
                     Color.clear.frame(height: 1).id("bottom")
                 }
@@ -44,7 +44,9 @@ struct ThreadView: View {
             .onChange(of: replies.count) { _, _ in withAnimation { proxy.scrollTo("bottom", anchor: .bottom) } }
         }
         .safeAreaInset(edge: .bottom) {
-            if let root {
+            if model.guestReading {
+                GuestBar(group: group)
+            } else if let root {
                 Composer(group: group, placeholder: replies.isEmpty ? "Reply (starts a thread)" : "Reply in the thread", autoFocus: focusReply, threadMode: true) { text, _, _ in
                     model.reply(text, in: group, to: root)
                 }
@@ -57,6 +59,8 @@ struct ThreadView: View {
         }
         .sheet(item: $editing) { m in EditSheet(m: m, group: group) }
     }
+
+    func hold(_ m: Message) { if model.guestReading { model.joinAsked = true } else { actionsFor = m } }
 }
 
 /// Search this channel or all (accent-folded words; tap a result to see it in its channel).

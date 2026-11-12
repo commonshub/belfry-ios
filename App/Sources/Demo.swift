@@ -9,6 +9,8 @@ typealias Channel = BelfryCore.Group
 enum Demo {
     static func secret(_ name: String) -> Data { Crypto.sha256("belfry-ios-demo:" + name) }
     static let meSecret = secret("you")
+    /// Guest mode's demo: someone who opened a guest link of #general and reads (SPEC 19.26).
+    static let readerSecret = secret("reader")
     static let people: [(String, String)] = [
         ("ana", "Ana Silva"), ("ben", "Ben Okafor"), ("chloe", "Chloé Martin"), ("dev", "Dev Patel"), ("emma", "Emma Lind"),
     ]
@@ -16,7 +18,9 @@ enum Demo {
     static func signer(_ name: String) -> LocalSigner { try! LocalSigner(secret: secret(name)) }
 
     static func seed(engine: SyncEngine, dms: DirectMessages) async {
-        let me = engine.me
+        // Sam is the demo's member; on the guest-mode demo this phone is a reader, not Sam
+        let me = try! LocalSigner(secret: meSecret).pubkey
+        let reader = engine.me != me
         let now = Int.now
         let day = 86400
         var evs = [NostrEvent]()
@@ -148,6 +152,15 @@ enum Demo {
         msg(ps["chloe"]!, "garden-3f2a", now - 2 * day, "The basil did not survive the cold night 🥲")
         msg(ps["dev"]!, "repair-cafe-91bc", now - 3 * day, "Who can fix a **sewing machine**? Asking for Mrs. Dupont.")
         msg(ps["emma"]!, "kitchen-7d10", now - 6 * 3600, "Soup on Thursday, I need two helpers to chop.")
+        // guest mode: two people opened a guest link of #general and only read ("2 guests are reading")
+        for k in ["reader-1", "reader-2"] {
+            evs.append(ev(groupsKey, 9000, now - 900, [["h", "general"], ["p", signer(k).pubkey, "member"], ["guest", "2026-12-12"], ["invited-by", ps["ana"]!.pubkey], ["unsaved", "1"], ["reading", "1"]]))
+        }
+        if reader {
+            evs.append(ev(groupsKey, 9000, now - 60, [["h", "general"], ["p", engine.me, "member"], ["guest", "2026-12-12"], ["invited-by", ps["ana"]!.pubkey], ["unsaved", "1"], ["reading", "1"]]))
+            engine.add(evs, verify: false)
+            return
+        }
         engine.add(evs, verify: false)
         engine.add([ev(you, 30078, now - 3 * day, [["d", "seen:general"], ["h", "general"]])], verify: false)
 

@@ -82,6 +82,9 @@ public struct Group: Identifiable, Hashable, Sendable {
     public var createdAt: Int
     public var lastActivity: Int
     public var members: Set<String> = []
+    /// Guest mode (SPEC 19.26): keys that opened a guest link and have not joined. Left out of
+    /// `members` (except me), member lists, counts, "active" and mention pickers.
+    public var reading: Set<String> = []
     public var admins: Set<String> = []
     public var closed = false
     public var prompt: String?
@@ -475,7 +478,7 @@ public final class Derive {
 
     /// People who can be mentioned or messaged: (pubkey, name) of everyone with a name, me left out.
     public lazy var people: [(pubkey: String, name: String)] = profileMap
-        .filter { $0.key != me && !($0.value.name ?? "").isEmpty }
+        .filter { $0.key != me && !($0.value.name ?? "").isEmpty && !onlyReading.contains($0.key) }
         .map { (pubkey: $0.key, name: $0.value.name!) }
         .sorted { $0.name.lowercased() != $1.name.lowercased() ? $0.name.lowercased() < $1.name.lowercased() : $0.pubkey < $1.pubkey }
 
@@ -530,8 +533,15 @@ public final class Derive {
             if e.kind == 9000 || e.kind == 9001, let p = e.tag("p"), !p.isEmpty {
                 if e.kind == 9000 { g.members.insert(p) } else { g.members.remove(p) }
                 decided[id + p] = e.createdAt
+                // guest mode: a 9000 tagged `reading` is someone who opened a guest link; a later
+                // 9000 without it (they joined), a `saved` / `member` label or a 9001 ends that
+                if e.kind == 9000 && e.tag("reading") == "1" { g.reading.insert(p) } else { g.reading.remove(p) }
                 // a co-host (events): put in with the admin role; the relay's 39001 says the same
                 if e.kind == 9000, e.tags.contains(where: { $0.count >= 3 && $0[0] == "p" && $0[1] == p && $0[2] == "admin" }) { g.admins.insert(p) }
+            }
+            if e.kind == 1985, e.tag("L") == Derive.guestNS, let p = e.tag("p"), !p.isEmpty,
+               e.tags.contains(where: { $0.count >= 2 && $0[0] == "l" && ($0[1] == "saved" || $0[1] == "member") }) {
+                g.reading.remove(p)
             }
             if e.kind == 9 {
                 g.lastActivity = max(g.lastActivity, e.createdAt)
@@ -561,6 +571,8 @@ public final class Derive {
             map[sub] = g
         }
         for id in order where (map[id]!.isPod || map[id]!.isProposal) && map[id]!.parent == nil { map[id]!.parent = generalId }
+        // reading guests are in no member list or count until they join (the relay's 39002 has them)
+        for id in order { map[id]!.members.subtract(map[id]!.reading.subtracting([me])) }
         for k in appliedOrder {
             guard let e = applied[k] else { continue }
             let gid = String(k.dropLast(e.pubkey.count))
@@ -848,6 +860,8 @@ public final class Derive {
             if e.kind == 9001, let p = e.tag("p"), !p.isEmpty { gone[p] = max(gone[p] ?? 0, e.createdAt) }
             else if e.kind == 9 || e.kind == 1111 { wrote.insert(e.pubkey) }
             guard e.kind == 9000, let by = e.tag("invited-by"), !by.isEmpty, let p = e.tag("p"), !p.isEmpty else { continue }
+            // guest mode: opened the link, not joined: no join line, no guest chip (SPEC 19.26)
+            if e.tag("reading") == "1" { continue }
             let isMember: Bool
             switch ctx.kinds[p] ?? "" {
             case "member", "agent": isMember = true
@@ -863,6 +877,19 @@ public final class Derive {
         joinsCache[groupId] = result
         return result
     }
+
+    /// How many guests are reading CHANNEL (guest mode, me left out): "N guests are reading".
+    public func readingCount(_ groupId: String) -> Int { group(groupId)?.reading.subtracting([me]).count ?? 0 }
+
+    /// Keys that are reading somewhere and in no channel otherwise (not mentionable, not people).
+    public lazy var onlyReading: Set<String> = {
+        var reading = Set<String>(), inSome = Set<String>()
+        for g in groupList { reading.formUnion(g.reading); inSome.formUnion(g.members); inSome.formUnion(g.admins) }
+        return reading.subtracting(inSome).subtracting([me])
+    }()
+
+    /// Am I reading CHANNEL in guest mode, as the events say (the app's own flag comes first).
+    public func amReading(_ groupId: String) -> Bool { group(groupId)?.reading.contains(me) ?? false }
 
     /// Everyone brought in by a link or as a member's agent: the keys to ask the register about.
     public lazy var guestJoinKeys: [String] = {
@@ -988,7 +1015,8 @@ public final class Derive {
         }
         var known: Set<String>?
         if let g, !g.members.isEmpty { known = g.members.union(g.admins) }
-        return order.filter { known == nil || known!.contains($0) }
+        let reading = g?.reading ?? []
+        return order.filter { (known == nil || known!.contains($0)) && !reading.contains($0) }
             .map { ActiveMember(pubkey: $0, at: last[$0]!) }
             .enumerated().sorted { a, b in a.element.at != b.element.at ? a.element.at > b.element.at : a.offset < b.offset }
             .map(\.element)
@@ -1215,7 +1243,7 @@ public final class Derive {
         let g = group(groupId)
         let labels = memberLabels(groupId)
         var keys = Array(g?.members ?? []).sorted()
-        for k in labels.keys.sorted() where !keys.contains(k) { keys.append(k) }
+        for k in labels.keys.sorted() where !keys.contains(k) && !(g?.reading.contains(k) ?? false) { keys.append(k) }
         if g?.isPod != true, !keys.contains(me) { keys.append(me) }
         var invited = [String: GuestJoin]()
         for j in guestJoins(groupId) where !j.member { invited[j.pubkey] = j }

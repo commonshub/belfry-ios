@@ -178,7 +178,8 @@ struct MembersTab: View {
         let d = model.derive
         let rows = d.memberRows(id)
         let admin = d.canAdmin(id)
-        Section("\(rows.count) \(rows.count == 1 ? "person" : "people")") {
+        let readingN = d.readingCount(id)
+        Section {
             ForEach(rows) { r in
                 Button { open(r.pubkey) } label: {
                     HStack(spacing: 10) {
@@ -201,6 +202,13 @@ struct MembersTab: View {
                     }
                 }
                 .buttonStyle(.plain)
+            }
+        } header: {
+            Text("\(rows.count) \(rows.count == 1 ? "person" : "people")")
+        } footer: {
+            // guest mode (SPEC 19.26): people who opened an invite link and have not joined are a number
+            if readingN > 0 {
+                Text("\(readingN == 1 ? "1 guest is reading" : "\(readingN) guests are reading"): they opened an invite link and have not joined yet.")
             }
         }
         .sheet(item: Binding(get: { labeling.map { ProfileKey(pubkey: $0) } }, set: { labeling = $0?.pubkey })) { k in
