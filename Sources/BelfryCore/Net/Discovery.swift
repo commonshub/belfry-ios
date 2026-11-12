@@ -22,6 +22,9 @@ public struct BelfryConfig: Codable, Hashable, Sendable {
     public var agentsMap: [String: String]?
     /// The ETag of the document this copy came from (revalidated with If-None-Match).
     public var etag: String?
+    /// belfry.json `sign_in.sessions.api`: the full address of the session endpoint of the native
+    /// sign-in (SPEC 19.20). Nil = an older belfry: the browser sign-in.
+    public var sessionAPI: String?
 
     public var agents: [String: String] { agentsMap ?? [:] }
 
@@ -56,6 +59,8 @@ public struct BelfryConfig: Codable, Hashable, Sendable {
         if let t = s(connect["token"]) { c.token = t }
         if let l = s(connect["logout"]) { c.logout = l }
         if let r = s(connect["revoke"]) { c.revoke = r }
+        if let api = s(((doc["sign_in"] as? [String: Any])?["sessions"] as? [String: Any])?["api"]),
+           api.hasPrefix("https://"), URL(string: api)?.host != nil { c.sessionAPI = api }
         c.admins = (doc["admins"] as? [String] ?? []).filter(isHex64)
         if let access = doc["access"] as? [String: Any], let more = access["admins"] as? [String] {
             c.admins += more.filter { isHex64($0) && !c.admins.contains($0) }

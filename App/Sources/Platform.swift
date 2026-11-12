@@ -1,4 +1,5 @@
 import AuthenticationServices
+import BelfryCore
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import Foundation
@@ -40,6 +41,13 @@ enum Keychain {
         let q: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service]
         SecItemDelete(q as CFDictionary)
     }
+}
+
+/// Small secrets by name in the Keychain (the native sign-in's pending request and session key).
+final class KeychainVault: Vault {
+    func get(_ key: String) -> String? { Keychain.string(key) }
+    func set(_ key: String, _ value: String) { Keychain.setString(value, key) }
+    func remove(_ key: String) { Keychain.removeString(key) }
 }
 
 @MainActor

@@ -8,8 +8,8 @@ don't guess. The Android app (opencollective/belfry-android) is a second reading
 [PARITY.md](PARITY.md). What the server must add: [SERVER-NEEDS.md](SERVER-NEEDS.md).
 
 `vectors/` is the contract shared with Android: keep both repos' files identical (copy, don't
-edit one side). SPEC.md differs from Android's only in the paragraph that opens section 19 and the (iOS) note
-that ends 19.19.
+edit one side). SPEC.md differs from Android's only in the paragraph that opens section 19 and the (iOS) notes
+that end 19.19 and 19.20 (Android's 19.21 and 19.22 are not ported yet).
 
 ## Layout
 
@@ -37,7 +37,8 @@ that ends 19.19.
     `Text.swift`: hashtags, mentions, JS-like regex helper (`Rx`, UTF-16 offsets).
   - `Mail/`: mail-thread keys, MIME read/write. `Markdown/`: the subset as a tree + e-mail HTML.
   - `Outbox/`: outbox items, error classes, one flush pass (pure, tested).
-  - `Net/`: discovery + PKCE sign-in (belfry.json revalidated with ETag), `Relay`
+  - `Net/`: discovery + PKCE sign-in (belfry.json revalidated with ETag), `NativeSignIn.swift`
+    (SPEC 19.20: `MemberAddress`, the two signed calls, `NativeSignInFlow` over a `Vault`), `Relay`
     (URLSessionWebSocketTask, NIP-42), `BunkerSigner` (NIP-46), `SyncEngine` (relays,
     subscriptions, outbox, watchdog, NWPathMonitor), `Api.swift` (`BelfryAPI`: the belfry's HTTP
     API, NIP-98, `ApiError` with fixed messages per `error` code; `InviteLink`), `EventsApi.swift`.
@@ -50,6 +51,7 @@ that ends 19.19.
   (+ `PullDown` line and sheet, `MessageRow` + cards, `MessageActions` menu / delete / edit /
   mail reply, `Composer` with @ and # pickers and the ＋ menu, `ThreadView` + `ChannelSearch`),
   `ChannelDetails` (tabs + invite sheet), `PeopleUI` (profile, edit, Me, devices, save account),
+  `SignInView` (address → six code boxes; the browser as a second row; `AppModel+SignIn`),
   `JoinUI` (guest links), `EventsUI`, `Kit` (BusyButton, ActionRow, PodShape, ChannelGlyph,
   Chip, `openChannel` environment). `project.yml` is the XcodeGen spec; the `.xcodeproj`,
   `App/Info.plist` and `App/Belfry.entitlements` are generated, not committed.
@@ -78,7 +80,8 @@ agent), local-only. `-screen <name>` opens a screen for the screenshot job (`scr
 screenshots.sh` lists them: feed, thread, details, invite, messages, conversation, mail, search,
 channels, pulldown, menu, delete, edit, threadscreen, chsearch, add, pod, proposal, event,
 profile, editprofile, me, members, todos, files, events, eventhost, eventform). `-join` (no
-`-demo`) shows the signed-out join screen with a demo invite.
+`-demo`) shows the signed-out join screen with a demo invite. `-signin code` / `-signin older`
+show the sign-in's code screen / the older-belfry state with made-up values (nothing is sent).
 
 ## UI rules (the owner's, not negotiable)
 
@@ -103,6 +106,12 @@ profile, editprofile, me, members, todos, files, events, eventhost, eventform). 
   the app's own group on an unsigned build); App Group `group.sh.belfry.app`; `aps-environment`
   from `APS_ENVIRONMENT` (development / production). `AppDelegate` (in AppModel+Push) gets the
   token and the taps. The portal set-up Xavier must do is in SERVER-NEEDS 3.
+- Sign-in (SPEC 19.20): native by default (`name@domain` → code by e-mail), the endpoint from
+  belfry.json `sign_in.sessions.api`; the browser (`ASWebAuthenticationSession`, SPEC 2) is the
+  second row and the fallback for a belfry without that key. The pending request (address,
+  session key, later the bunker address) lives in the Keychain (service
+  `sh.belfry.app.session.keys`, account `native-signin`) for at most 15 minutes. Never test it
+  against a live belfry with a real member's name: it mails that person a code.
 - Universal links: `applinks:chat.belfry.sh`, `applinks:chat.enspiral.eu` (project.yml
   entitlement) for `/join/<token>` and `/events/<link>`; the chat hosts must serve
   apple-app-site-association (SERVER-NEEDS 5). A guest's join session key lives in the Keychain

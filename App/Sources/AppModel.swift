@@ -47,6 +47,10 @@ final class AppModel: ObservableObject {
     @Published var composerPrefill = [String: String]()
     @Published var config: BelfryConfig = .defaults(domain: "belfry.sh")
     @Published var signInError: String?
+    /// The native sign-in waiting for its code (SPEC 19.20): screen 2. Kept in the Keychain by
+    /// `nativeFlow`, so it is back after the app was killed while the person read the e-mail.
+    @Published var pendingCode: PendingCode?
+    let nativeFlow = NativeSignInFlow(vault: KeychainVault())
     @Published var busy = false
 
     private(set) var engine: SyncEngine?
@@ -74,8 +78,14 @@ final class AppModel: ObservableObject {
         } else if launch.demo {
             pendingInvite = nil
             startDemo()
+        } else if launch.signin == "code" {
+            pendingCode = PendingCode(address: "maya@riverside.example", to: "m\u{2022}\u{2022}\u{2022}@example.org")
+        } else if launch.signin != nil {
+            // a screenshot of screen 1
         } else if let s = Keychain.load() {
             open(s)
+        } else {
+            pendingCode = nativeFlow.pending
         }
     }
 
@@ -262,6 +272,8 @@ final class AppModel: ObservableObject {
         }
         try? FileManager.default.removeItem(at: AppModel.attachmentsDir)
         Keychain.clear()
+        nativeFlow.cancel()
+        pendingCode = nil
         engine = nil
         dms = nil
         session = nil
@@ -615,10 +627,13 @@ enum EmojiUsage {
 struct LaunchOptions {
     let demo: Bool
     let screen: String?
+    /// `-signin code` / `-signin older`: the sign-in screens with made-up state, for screenshots.
+    let signin: String?
 
     init() {
         let args = ProcessInfo.processInfo.arguments
         demo = args.contains("-demo")
         if let i = args.firstIndex(of: "-screen"), i + 1 < args.count { screen = args[i + 1] } else { screen = nil }
+        if let i = args.firstIndex(of: "-signin"), i + 1 < args.count { signin = args[i + 1] } else { signin = nil }
     }
 }

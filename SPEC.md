@@ -488,8 +488,9 @@ core implements it in `core/src/main/kotlin/sh/belfry/core/model/` (`World`, `Ac
 core in `Sources/BelfryCore/Model/` (`Derive` + its extensions `Events`, `Proposals`,
 `ChannelLine`, `ChannelRefs`, `Access`, `People`, `Actions2`), since 2026-11-11. `vectors/` is
 kept identical in both repositories (opencollective/belfry-ios and opencollective/belfry-android)
-and this file differs only in this paragraph and the (iOS) note that ends 19.19: change both in
-both.
+and this file differs only in this paragraph and the (iOS) notes that end 19.19 and 19.20:
+change both in both. Android's 19.21 (web changes of 2026-11-11 / 12) and 19.22 (snapshots built
+on the one before) are not ported here yet.
 
 `KINDS_GROUPS` (section 4) now also has **1010** (edits).
 
@@ -990,3 +991,77 @@ them).
 - (iOS) The Notification Service Extension cannot drop a notification without Apple's
   notification-filtering entitlement, so an own copy that arrives in the background is delivered
   silently (passive, no sound); in the foreground it is not presented.
+
+### 19.20 Signing in without a browser (collective-belfry `sessions.py`, 2026-11-12)
+
+The default sign-in of the phone apps. Section 2 (the browser, OAuth code + PKCE) stays as the
+second way ("Sign in with the browser instead") and is what the app offers by itself on an older
+belfry. The contract is the module docstring of `services/onboarding/belfry_onboarding/sessions.py`.
+
+- **Screen 1.** One field, the member's address `name@domain` (e-mail keyboard, no
+  capitalisation, ≥ 16 pt). Accept it only as: trimmed, lower-cased, exactly one `@`, name
+  `[a-z0-9][a-z0-9._-]{0,63}`, domain a hostname (section 1's rule). Fetch
+  `https://<domain>/.well-known/belfry.json`; no document → "There is no belfry at <domain>."
+  (the domain is the one typed and validated; nothing from an answer is shown).
+- **Session key.** The app makes the NIP-46 client key *before* asking (a fresh 32-byte key)
+  and keeps it with the address in secure storage until the sign-in ends: the same key signs
+  the resend, the verify, and is the client key of the session afterwards (the belfry binds the
+  connection to it when it creates it). Keep the pending request across a process death: the
+  person leaves the app to read the e-mail. A new address, or `key_taken`, makes a new key.
+- **Ask for a code.** `POST <api.base>/session`, NIP-98 signed **by the session key**, body
+  `{"nip05":"name@domain","app":"sh.belfry.app://connect","client":"belfry-android"}` (iOS:
+  `belfry-ios`; `client` names the session, `app` is the approved native app address).
+  - 200 `{"state":"code_sent","to":"x•••@example.org","nip05":"name@domain"}` → screen 2. Show
+    `to` only when it matches `^[^\s@•]•••@<hostname>$` (≤ 260 characters); otherwise say "your
+    e-mail address".
+  - `{"error": key}` → a fixed message per key: 404 `unknown` (no such member here, or the
+    belfry answers for another domain), 409 `no_email`, 422 `invalid` (also `app_address`), 429
+    `too_many` ("try again in half an hour"), 401 `unauthorized` (a wrong clock is the usual
+    cause).
+  - 404 / 405 **without an `error` key** (FastAPI's `{"detail":"Not Found"}`, a proxy's page):
+    an older belfry → say so and turn the main button into the browser sign-in of section 2.
+- **NIP-98 `created_at`.** The belfry accepts each signed event once. Use
+  `max(last + 1, now)` for these calls so a resend or a retry in the same second is a different
+  event.
+- **Screen 2.** Six digit boxes over one numeric field (number pad; typing advances, backspace
+  goes back; whatever is typed or pasted is reduced to its first six ASCII digits, so "123 456"
+  fills them); the sixth digit submits. "Send a new code" repeats the first request with the same
+  key and is locked for 30 s after each send. Back (the system's and a "Use another address"
+  row) returns to screen 1 with the address still in the field. The request lives 15 minutes on
+  the belfry (a code 10): after that the app forgets it.
+- **Verify.** `POST <api.base>/session/verify` `{"code":"123456"}`, signed by the same key.
+  - 200 `{"state":"open","bunker_url":"bunker://…","pubkey":"<hex>","npub":"…","nip05":"…"}`:
+    accept only with `state` = `open`, a parsable bunker URL and a 64-hex `pubkey`. Connect as
+    in section 3 with the session key, then ask the signer `get_public_key` (do not trust the
+    answer's `pubkey` for that): it **must equal** `pubkey`, else disconnect, forget the request
+    and show the `mismatch` message. Store the session exactly like section 2's. Keep the bunker
+    URL with the pending request until the signer has answered: the code is spent, so "Try
+    again" after a timeout reconnects without a second verify.
+  - 422 `wrong_code` with `tries_left` (int): empty the boxes, "That code is not right. N tries
+    left." (0 → "Ask for a new one."). 410 `expired` → screen 1 with a fixed note. 409
+    `key_taken` → forget the key, screen 1 (the next try makes a new key). 409 `own_key` (the
+    member holds their own key: the app cannot sign them in yet), 409 `mismatch`, 403
+    `app_not_approved` → screen 1 with their messages. 429, no connection → stay on screen 2
+    with the digits and a "Try again" button.
+- The server's `message` field is never shown. Guest links (19.4) are unchanged.
+- Android: `core/net/NativeSignIn.kt` (the two calls, the checks), `Onboarding.requestCode /
+  resendCode / verifyCode / pendingCode` (vault key `native-signin`), `ui/signin/SignInScreen.kt`
+  (`SignInContent`, `CodeContent`, `CodeBoxes`); tests `NativeSignInTest`.
+- (iOS) Differences from the text above, to carry back to Android's:
+  - **The endpoint is named by belfry.json**: `sign_in.sessions.api` is the full address of the
+    session endpoint (`https://belfry.<domain>/api/v1/session`; verify = that + `/verify`). The
+    iPhone app posts there (https only), not to `<api.base>/session`. No such key = an older
+    belfry: nothing is asked and the browser sign-in is offered; a 404 / 405 without an `error`
+    key from the address named is read the same way.
+  - **503 `signer`** on verify (since collective-belfry 60c82bf): the belfry's own signer did
+    not answer it. The code is spent but the request stands: empty the boxes, say so, and
+    unlock "Send a new code" at once (no 30 s wait). Before that commit this case read `own_key`.
+  - A signer that does not answer *this phone* after a right code is the app's own `connect`
+    failure: screen 2 stays with the digits and "Try again", which reconnects with the bunker
+    address kept (no second verify).
+  - The code field carries the system's one-time-code hint (`.textContentType(.oneTimeCode)`):
+    iOS offers the code from Mail / Messages above the keyboard.
+  - `Sources/BelfryCore/Net/NativeSignIn.swift` (`MemberAddress`, `NativeSignIn`: the two calls
+    and the checks; `NativeSignInFlow`: the request kept in the Keychain under `native-signin`,
+    service `sh.belfry.app.session.keys`), `App/Sources/SignInView.swift` (`AddressScreen`,
+    `CodeScreen`, `CodeBoxes`), `AppModel+SignIn.swift`; tests `NativeSignInTests`.

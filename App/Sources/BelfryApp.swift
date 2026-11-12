@@ -12,7 +12,8 @@ struct BelfryApp: App {
             SwiftUI.Group {
                 switch model.phase {
                 case .signedOut:
-                    if let invite = model.pendingInvite { JoinScreen(invite: invite) } else { SignInView() }
+                    // a code is on its way: that screen first, a guest link waits behind it
+                    if model.pendingCode == nil, let invite = model.pendingInvite { JoinScreen(invite: invite) } else { SignInView() }
                 case .ready: RootView()
                 }
             }

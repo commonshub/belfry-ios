@@ -83,6 +83,28 @@ The token answer has no refresh token or expiry. How long does a Keycast bunker 
 and what does the signer answer once it is removed on the account page (an error string the app
 can recognise, so it can ask the person to sign in again instead of retrying)?
 
+## 4b. Native sign-in (`POST <sign_in.sessions.api>`, `/verify`) — built in the app 2026-11-12, not run live
+
+The app follows sessions.py's docstring (SPEC 19.20). Nothing blocks; notes for the belfry:
+
+- **Telling an older belfry apart** (Android's ask) is settled for this app: it reads the
+  endpoint from belfry.json `sign_in.sessions.api` and offers the browser when the key is
+  missing. One gap: a belfry between 2026-11-05 and 639b39b publishes that key (the HTTP API for
+  web apps existed) but refuses `app` = `sh.belfry.app://connect`, most likely with 422
+  `invalid` / `app_address`, which this app shows as "Type your address like name@belfry.sh."
+  Both live belfries are past that commit. A capability flag (e.g. `sign_in.sessions.native:
+  true`) would close it.
+- **503 `signer`** (60c82bf) is handled: "Send a new code" unlocks at once. Thank you.
+- **`unknown` means two things** (no such member; the belfry answers for another domain): one
+  message covers both.
+- **`tries_left: 0`**: the app says "Ask for a new one." and assumes the code is dead; `expired`
+  on the next try is handled too.
+- **Enumeration**: `POST /session` tells `unknown` from `code_sent` to anyone with a key; a rate
+  limit per key / IP for unknown names is the belfry's to decide.
+- The session is named by `client` = `belfry-ios`; sign-out revokes it as before (item 4).
+- The calls use a NIP-98 `created_at` that only grows (`max(last + 1, now)`), so a resend in the
+  same second is never the same event (section 6's replay note).
+
 ## 5. `apple-app-site-association` so guest links and event addresses open in the app
 
 The app claims `https://chat.belfry.sh` and `https://chat.enspiral.eu` (entitlement
