@@ -131,8 +131,11 @@ extension AppModel {
         catch let f as GuestJoinFailure { return f } catch { return GuestJoinFailure(.failed) }
     }
 
-    /// The code from the e-mail: the account is saved under that address (and name).
-    func verifyJoinCode(email: String, code: String, name: String?) async -> GuestJoinFailure? {
+    /// The code from the e-mail: the account is saved under that address (and name). SINCE: when
+    /// an earlier attempt that may have reached the belfry started (its answer lost): then an
+    /// expired / wrong code / not a guest may only mean that attempt worked, and the relay is
+    /// asked first (#issues 2026-11-13, web guestjoin.ts savedOnRelay).
+    func verifyJoinCode(email: String, code: String, name: String?, since: Int? = nil) async -> GuestJoinFailure? {
         if isDemo {
             await pause(400)
             if email.jsTrim().lowercased() == "taken@example.org" { return GuestJoinFailure(.taken, moved: true, nip05: "taken@demo.belfry.sh") }
@@ -147,7 +150,9 @@ extension AppModel {
             }
         } else {
             do { try await api.guestVerify(email: email, code: code, name: name) }
-            catch let f as GuestJoinFailure { return f } catch { return GuestJoinFailure(.failed) }
+            catch let f as GuestJoinFailure {
+                guard let since, f.error.mayMeanSavedAlready, await guestSavedOnRelay(since: since - 5) else { return f }
+            } catch { return GuestJoinFailure(.failed) }
         }
         finishJoining()
         // a co-host link waiting for a proven e-mail: now it makes them a host
@@ -157,6 +162,17 @@ extension AppModel {
         }
         await refresh()
         return nil
+    }
+
+    /// Did the belfry save this guest since SINCE (its label, or its join with a name, on the relay)?
+    /// Looks for a few seconds, once a second.
+    private func guestSavedOnRelay(since: Int) async -> Bool {
+        guard let e = engine else { return false }
+        for i in 0..<GuestJoinSaved.looks {
+            if GuestJoinSaved.saved(in: e.snapshot(), me: e.me, channel: guestChannel, since: since) { return true }
+            if i < GuestJoinSaved.looks - 1 { await pause(1000) }
+        }
+        return false
     }
 
     /// Joined (or saved): writes go out again, and the session no longer says "reading".

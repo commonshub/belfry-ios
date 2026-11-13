@@ -253,13 +253,17 @@ private struct CodeScreen: View {
     }
 }
 
-/// Six boxes over one numeric field: the field takes the typing, a paste ("123 456") and the
-/// system's code suggestion; the boxes show it. The sixth digit calls COMPLETE.
+/// Six boxes over one numeric field with no length limit: the field takes the typing, a paste
+/// ("123 456", "Code: 123456", a new code over a full row: `NativeSignIn.next`) and the system's
+/// code suggestion; the boxes show it. The sixth digit calls COMPLETE.
 struct CodeBoxes: View {
     @Binding var digits: String
     let enabled: Bool
     var focused: FocusState<Bool>.Binding
     let complete: () -> Void
+    /// What the boxes held after the last change (a seventh digit bounced back to the same six
+    /// does not call COMPLETE again).
+    @State private var accepted = ""
 
     var body: some View {
         let typed = Array(digits)
@@ -290,10 +294,15 @@ struct CodeBoxes: View {
                 .disabled(!enabled)
                 .accessibilityLabel("6-digit code")
                 .onChange(of: digits) { _, new in
-                    let d = NativeSignIn.digits(new)
+                    // a paste ("123 456", "Code: 123456") fills all six; a whole code pasted over a
+                    // full row replaces it; one more digit typed into a full row changes nothing
+                    let d = NativeSignIn.next(old: accepted, raw: new)
                     if d != new { digits = d; return } // comes back here with the digits alone
+                    guard d != accepted else { return }
+                    accepted = d
                     if d.count == 6 { complete() }
                 }
+                .onAppear { accepted = digits }
         }
         .contentShape(Rectangle())
         .onTapGesture { if enabled { focused.wrappedValue = true } }

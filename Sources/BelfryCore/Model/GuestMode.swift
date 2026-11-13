@@ -134,3 +134,44 @@ public enum GuestJoinForm {
         (!askName || !cleanName(name).isEmpty) && looksLikeEmail(email)
     }
 }
+
+// ---- the code step after a failure (#issues 2026-11-13; web village-app 8cd92ac + guestjoin.ts
+// savedOnRelay, Android 2385da4) ------------------------------------------------------------------
+
+extension GuestJoinError {
+    /// The code itself was refused: the boxes are cleared. Anything else (no connection, a timeout,
+    /// a 5xx or 429, …) keeps the digits and offers "Try again".
+    public var clearsCode: Bool { self == .wrongCode || self == .expired }
+
+    /// An attempt that failed like this may have reached the belfry (and used the code there):
+    /// its answer was lost, or the belfry broke after saving.
+    public var mayHaveReached: Bool { self == .offline || self == .failed }
+
+    /// After such an attempt, these answers to a manual "Try again" may only mean the first one
+    /// worked: look whether the save happened before saying so.
+    public var mayMeanSavedAlready: Bool { self == .expired || self == .wrongCode || self == .notGuest }
+}
+
+public enum GuestJoinSaved {
+    /// How long to look for the save on the relay (one look a second).
+    public static let looks = 6
+
+    /// Did the belfry save ME in CHANNEL (nil: in any channel) since SINCE: its label (kind 1985
+    /// `belfry/guest`, `l` saved or member, `p` me), or the join with a name (kind 9000 for me
+    /// with `name` and without `reading`)? Web `savedOnRelay`.
+    public static func saved(in events: [NostrEvent], me: String, channel: String?, since: Int) -> Bool {
+        events.contains { e in
+            guard e.createdAt >= since,
+                  e.tags.contains(where: { $0.count > 1 && $0[0] == "h" && !$0[1].isEmpty && (channel == nil || $0[1] == channel) }),
+                  e.tags.contains(where: { $0.count > 1 && $0[0] == "p" && $0[1] == me }) else { return false }
+            if e.kind == 1985 {
+                return e.tags.contains(where: { $0.count > 1 && $0[0] == "L" && $0[1] == Derive.guestNS })
+                    && e.tags.contains(where: { $0.count > 1 && $0[0] == "l" && ($0[1] == "saved" || $0[1] == "member") })
+            }
+            if e.kind == 9000 {
+                return e.tags.contains(where: { $0.first == "name" }) && !e.tags.contains(where: { $0.first == "reading" })
+            }
+            return false
+        }
+    }
+}

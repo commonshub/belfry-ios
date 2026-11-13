@@ -209,6 +209,34 @@ final class GuestModeTests: XCTestCase {
         XCTAssertEqual(asked, 1)
     }
 
+    func testCodeStepAfterFailure() {
+        // only a refused code clears the boxes; a lost connection keeps them (#issues 2026-11-13)
+        XCTAssertTrue(GuestJoinError.wrongCode.clearsCode)
+        XCTAssertTrue(GuestJoinError.expired.clearsCode)
+        for e in [GuestJoinError.offline, .failed, .tooMany, .notGuest, .taken] { XCTAssertFalse(e.clearsCode, e.rawValue) }
+        XCTAssertTrue(GuestJoinError.offline.mayHaveReached)
+        XCTAssertTrue(GuestJoinError.failed.mayHaveReached)
+        XCTAssertFalse(GuestJoinError.wrongCode.mayHaveReached)
+        XCTAssertEqual(GuestJoinError.allCases.filter(\.mayMeanSavedAlready), [.wrongCode, .expired, .notGuest])
+
+        let since = now - 5
+        let label = ev(GK, 1985, now, [["h", "g"], ["L", "belfry/guest"], ["l", "saved", "belfry/guest"], ["p", ME]])
+        let member = ev(GK, 1985, now, [["h", "g"], ["L", "belfry/guest"], ["l", "member", "belfry/guest"], ["p", ME]])
+        let named = ev(GK, 9000, now, [["h", "g"], ["p", ME, "member"], ["guest", ""], ["name", "Lou"]])
+        XCTAssertTrue(GuestJoinSaved.saved(in: [label], me: ME, channel: "g", since: since))
+        XCTAssertTrue(GuestJoinSaved.saved(in: [member], me: ME, channel: "g", since: since))
+        XCTAssertTrue(GuestJoinSaved.saved(in: [named], me: ME, channel: "g", since: since))
+        // not: older than the attempt, another channel, someone else, the reading join, another label
+        XCTAssertFalse(GuestJoinSaved.saved(in: [ev(GK, 1985, now - 60, label.tags)], me: ME, channel: "g", since: since))
+        XCTAssertFalse(GuestJoinSaved.saved(in: [label, named], me: ME, channel: "h", since: since))
+        XCTAssertTrue(GuestJoinSaved.saved(in: [label], me: ME, channel: nil, since: since)) // a guest saving from any channel
+        XCTAssertFalse(GuestJoinSaved.saved(in: [label, named], me: ANA, channel: "g", since: since))
+        XCTAssertFalse(GuestJoinSaved.saved(in: [ev(GK, 9000, now, [["h", "g"], ["p", ME, "member"], ["unsaved", "1"], ["reading", "1"]])], me: ME, channel: "g", since: since))
+        XCTAssertFalse(GuestJoinSaved.saved(in: [ev(GK, 9000, now, [["h", "g"], ["p", ME, "member"], ["name", "Lou"], ["reading", "1"]])], me: ME, channel: "g", since: since))
+        XCTAssertFalse(GuestJoinSaved.saved(in: [ev(GK, 1985, now, [["h", "g"], ["L", "belfry/guest"], ["l", "unsaved", "belfry/guest"], ["p", ME]])], me: ME, channel: "g", since: since))
+        XCTAssertFalse(GuestJoinSaved.saved(in: [ev(GK, 1985, now, [["h", "g"], ["L", "belfry/pin"], ["l", "saved", "belfry/pin"], ["p", ME]])], me: ME, channel: "g", since: since))
+    }
+
     func testSignInAddress() {
         XCTAssertEqual(GuestJoinForm.signInAddress(nip05: "Ana@Example.org", typed: "ana@mail.example", domain: "example.org"), "ana@example.org")
         XCTAssertEqual(GuestJoinForm.signInAddress(nip05: nil, typed: " ana@example.org ", domain: "example.org"), "ana@example.org")

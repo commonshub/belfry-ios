@@ -103,6 +103,9 @@ struct JoinSheet: View {
     @State private var sentTo = ""
     @State private var resendAt = Date()
     @State private var launched = false
+    /// When the first code check whose answer was lost (no connection, a timeout, a 5xx) started:
+    /// it may have used the code on the belfry, so a later "expired" may mean it worked.
+    @State private var maybeReachedAt: Int?
     @FocusState private var codeFocused: Bool
 
     var askName: Bool { !saveOnly }
@@ -199,6 +202,11 @@ struct JoinSheet: View {
             }
         }
         .font(.callout)
+        // the digits stayed (the connection failed, not the code): the same code again
+        if !verifying && error != nil && NativeSignIn.isCode(digits) {
+            BusyButton { await verify() } label: { Text("Try again").frame(maxWidth: .infinity).padding(.vertical, 6) }
+                .buttonStyle(.borderedProminent)
+        }
         Divider()
         VStack(alignment: .leading, spacing: 18) {
             TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -245,6 +253,7 @@ struct JoinSheet: View {
         if let f = await model.sendJoinCode(email: typed, name: askName ? name : nil) { fail(f); return false }
         sentTo = typed
         digits = ""
+        maybeReachedAt = nil
         resendAt = Date().addingTimeInterval(30)
         step = .code
         return true
@@ -257,14 +266,21 @@ struct JoinSheet: View {
         error = nil
         note = nil
         codeFocused = false
-        let f = await model.verifyJoinCode(email: sentTo, code: digits, name: askName ? name : nil)
+        let started = Int.now
+        let f = await model.verifyJoinCode(email: sentTo, code: digits, name: askName ? name : nil, since: maybeReachedAt)
         verifying = false
         if let f {
-            digits = ""
+            // a wrong or expired code is cleared; a failed connection keeps the digits for Try again
+            if f.error.clearsCode {
+                digits = ""
+                if step == .code { codeFocused = true }
+            } else if f.error.mayHaveReached, maybeReachedAt == nil {
+                maybeReachedAt = started
+            }
             fail(f)
-            if step == .code { codeFocused = true }
             return
         }
+        maybeReachedAt = nil
         onSaved?(sentTo)
         dismiss()
     }

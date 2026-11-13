@@ -187,6 +187,19 @@ public struct NativeSignIn: Sendable {
 
     public static func isCode(_ s: String) -> Bool { s.unicodeScalars.count == 6 && s.unicodeScalars.allSatisfy(isDigit) }
 
+    /// What six code boxes hold after their field changed from OLD to RAW (web `nextCode`,
+    /// Android `NativeSignIn.next`, #issues 2026-11-13): the digits of RAW when there are at most
+    /// six ("123 456", "Code: 123456"); a whole code pasted over a full row (or after some digits)
+    /// replaces it (what was added past OLD, when that is six digits or more); one more digit typed
+    /// into a full row changes nothing. The field itself has no length limit: a limit would cut a
+    /// paste before its digits were picked.
+    public static func next(old: String, raw: String) -> String {
+        let d = String(String.UnicodeScalarView(raw.unicodeScalars.filter(isDigit)))
+        if d.unicodeScalars.count <= 6 { return d }
+        let added = d.hasPrefix(old) ? String(d.unicodeScalars.dropFirst(old.unicodeScalars.count)) : d
+        return String((added.unicodeScalars.count >= 6 ? added : d).unicodeScalars.prefix(6))
+    }
+
     /// The six digits in what was typed or pasted ("123 456", "Your code: 123456"), else what
     /// digits there are (at most six). ASCII digits only.
     public static func digits(_ raw: String) -> String {

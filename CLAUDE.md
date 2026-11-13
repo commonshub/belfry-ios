@@ -51,7 +51,9 @@ that end 19.19, 19.20 and 19.26 (Android's 19.21 to 19.25 are not ported yet). `
   (+ `PullDown` line and sheet, `MessageRow` + cards, `MessageActions` menu / delete / edit /
   mail reply, `Composer` with @ and # pickers and the ＋ menu, `ThreadView` + `ChannelSearch`),
   `ChannelDetails` (tabs + invite sheet), `PeopleUI` (profile, edit, Me, devices, save account),
-  `SignInView` (address → six code boxes; the browser as a second row; `AppModel+SignIn`),
+  `SignInView` (address → six code boxes, `CodeBoxes` also used by the Join sheet: no length
+  limit, digits via `NativeSignIn.next`; a failed connection keeps the digits + "Try again", only
+  wrong / expired codes clear them; the browser as a second row; `AppModel+SignIn`),
   `JoinUI` (guest links signed in), `GuestUI` + `AppModel+Guest` (guest mode, SPEC 19.26: the
   loading screen, the guest bar, the Join sheet), `EventsUI`, `Kit` (BusyButton, ActionRow, PodShape, ChannelGlyph,
   Chip, `openChannel` environment). `project.yml` is the XcodeGen spec; the `.xcodeproj`,
@@ -119,6 +121,9 @@ show the sign-in's code screen / the older-belfry state with made-up values (not
   entitlement) for `/join/<token>` and `/events/<link>`; the chat hosts must serve
   apple-app-site-association (SERVER-NEEDS 5). A guest's join session key lives in the Keychain
   (service `sh.belfry.app.session.keys`, account `join-<token>`) until the join works.
+- Join sheet code step: after an attempt whose answer was lost (offline / failed), an expired /
+  wrong_code / not_guest answer first checks the relay for the save (`GuestJoinSaved`, 6 s) and
+  counts it as joined (web guestjoin.ts savedOnRelay).
 - Guest mode (SPEC 19.26): `GuestModeGate` (BelfryCore) is the one check; `SyncEngine.guestMode`
   and `BelfryAPI(guestMode:)` carry it. Any new write path must go through the outbox or
   `BelfryAPI.signed` / `SyncEngine.signedRequest`, or check the gate itself. Automatic writes
